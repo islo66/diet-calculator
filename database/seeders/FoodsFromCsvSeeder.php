@@ -19,7 +19,7 @@ class FoodsFromCsvSeeder extends Seeder
         fgetcsv($handle, 0, ',');
 
         DB::transaction(function () use ($handle) {
-            $currentCategory = null;
+            $currentCategoryId = null;
 
             while (($row = fgetcsv($handle, 0, ',')) !== false) {
                 $name = isset($row[0]) ? trim($row[0]) : '';
@@ -37,36 +37,62 @@ class FoodsFromCsvSeeder extends Seeder
                 }
 
                 if (!$hasNumericData) {
-                    $currentCategory = $name;
+                    $currentCategoryId = DB::table('food_categories')->where('name', $name)->value('id');
+
+                    if (!$currentCategoryId) {
+                        $currentCategoryId = DB::table('food_categories')->insertGetId([
+                            'name' => $name,
+                            'is_active' => 1,
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+
                     continue;
                 }
 
-                $foodId = DB::table('foods')->insertGetId([
-                    'name' => $name,
-                    'category' => $currentCategory,
-                    'default_unit' => 'g',
-                    'is_active' => 1,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                $existingFoodId = DB::table('foods')
+                    ->where('name', $name)
+                    ->where('category_id', $currentCategoryId)
+                    ->value('id');
 
-                DB::table('food_nutrients')->insert([
-                    'food_id' => $foodId,
-                    'basis_qty' => 100,
-                    'basis_unit' => 'g',
+                if (!$existingFoodId) {
+                    $existingFoodId = DB::table('foods')->insertGetId([
+                        'category_id' => $currentCategoryId,
+                        'name' => $name,
+                        'default_unit' => 'g',
+                        'is_active' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                } else {
+                    DB::table('foods')->where('id', $existingFoodId)->update([
+                        'default_unit' => 'g',
+                        'is_active' => 1,
+                        'updated_at' => now(),
+                    ]);
+                }
 
-                    'protein_g' => $this->num($row[1] ?? null),
-                    'fat_g' => $this->num($row[2] ?? null),
-                    'carb_g' => $this->num($row[3] ?? null),
+                DB::table('food_nutrients')->updateOrInsert(
+                    [
+                        'food_id' => $existingFoodId,
+                        'basis_qty' => 100,
+                        'basis_unit' => 'g',
+                    ],
+                    [
+                        'protein_g' => $this->num($row[1] ?? null),
+                        'fat_g' => $this->num($row[2] ?? null),
+                        'carb_g' => $this->num($row[3] ?? null),
 
-                    'potassium_mg' => $this->num($row[4] ?? null),
-                    'phosphorus_mg' => $this->num($row[5] ?? null),
-                    'sodium_mg' => $this->num($row[6] ?? null),
-                    'kcal' => $this->num($row[7] ?? null),
+                        'potassium_mg' => $this->num($row[4] ?? null),
+                        'phosphorus_mg' => $this->num($row[5] ?? null),
+                        'sodium_mg' => $this->num($row[6] ?? null),
+                        'kcal' => $this->num($row[7] ?? null),
 
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]
+                );
             }
         });
 
