@@ -18,24 +18,38 @@
                                 <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Category</th>
                                 <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Unit</th>
                                 <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Active</th>
+
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Kcal</th>
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Protein (g)</th>
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Fat (g)</th>
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Carbs (g)</th>
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Sodium (mg)</th>
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Potassium (mg)</th>
+                                <th class="px-6 py-3 text-left font-semibold text-gray-700 border-b">Phosphorus (mg)</th>
                             </tr>
                             </thead>
                             <tbody>
                             @foreach ($foods as $food)
+                                @php($n = $food->nutrient)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 border-b">{{ $food->id }}</td>
                                     <td class="px-6 py-4 border-b">{{ $food->name }}</td>
-                                    <td class="px-6 py-4 border-b">{{ $food->category }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $food->category?->name ?? '—' }}</td>
                                     <td class="px-6 py-4 border-b">{{ $food->default_unit }}</td>
-                                    <td class="px-6 py-4 border-b">
-                                        {{ $food->is_active ? 'Yes' : 'No' }}
-                                    </td>
+                                    <td class="px-6 py-4 border-b">{{ $food->is_active ? 'Yes' : 'No' }}</td>
+
+                                    <td class="px-6 py-4 border-b">{{ $n?->kcal ?? '—' }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $n?->protein_g ?? '—' }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $n?->fat_g ?? '—' }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $n?->carb_g ?? '—' }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $n?->sodium_mg ?? '—' }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $n?->potassium_mg ?? '—' }}</td>
+                                    <td class="px-6 py-4 border-b">{{ $n?->phosphorus_mg ?? '—' }}</td>
                                 </tr>
                             @endforeach
                             </tbody>
                         </table>
                     </div>
-
 
                     <div class="mt-4">
                         {{ $foods->links() }}
