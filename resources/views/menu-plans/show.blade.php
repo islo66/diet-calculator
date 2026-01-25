@@ -1,0 +1,212 @@
+<x-app-layout>
+    <x-slot name="breadcrumbs">
+        <x-breadcrumb :href="route('menu-plans.index')">Planuri Meniu</x-breadcrumb>
+        <x-breadcrumb-separator />
+        <x-breadcrumb :active="true">{{ $menuPlan->name }}</x-breadcrumb>
+    </x-slot>
+
+    <x-slot name="header">
+        <div class="flex items-center justify-between">
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                {{ $menuPlan->name }}
+                <span class="text-gray-500 text-sm font-normal">
+                    - {{ $menuPlan->patient->full_name }}
+                </span>
+            </h2>
+            <div class="flex gap-2">
+                <a href="{{ route('menu-days.create', $menuPlan) }}"
+                   class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
+                    Adauga Zi
+                </a>
+                <a href="{{ route('menu-plans.edit', $menuPlan) }}"
+                   class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50">
+                    Editeaza Plan
+                </a>
+            </div>
+        </div>
+    </x-slot>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
+
+            @if (session('success'))
+                <div class="p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+                    {{ session('success') }}
+                </div>
+            @endif
+
+            {{-- Informatii Pacient --}}
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Limite Zilnice Pacient</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <span class="text-gray-500 block text-xs uppercase">Calorii</span>
+                            <span class="font-medium text-lg">{{ $menuPlan->patient->target_kcal_per_day ?? '—' }}</span>
+                            <span class="text-gray-500 text-xs">kcal</span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <span class="text-gray-500 block text-xs uppercase">Proteine</span>
+                            <span class="font-medium text-lg">{{ $menuPlan->patient->target_protein_g_per_day ?? '—' }}</span>
+                            <span class="text-gray-500 text-xs">g</span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <span class="text-gray-500 block text-xs uppercase">Sodiu (Na)</span>
+                            <span class="font-medium text-lg">{{ $menuPlan->patient->limit_sodium_mg_per_day ?? '—' }}</span>
+                            <span class="text-gray-500 text-xs">mg</span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <span class="text-gray-500 block text-xs uppercase">Potasiu (K)</span>
+                            <span class="font-medium text-lg">{{ $menuPlan->patient->limit_potassium_mg_per_day ?? '—' }}</span>
+                            <span class="text-gray-500 text-xs">mg</span>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3">
+                            <span class="text-gray-500 block text-xs uppercase">Fosfor (P)</span>
+                            <span class="font-medium text-lg">{{ $menuPlan->patient->limit_phosphorus_mg_per_day ?? '—' }}</span>
+                            <span class="text-gray-500 text-xs">mg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Zile --}}
+            @foreach ($daysWithNutrients as $dayData)
+                @php
+                    $day = $dayData['day'];
+                    $nutrients = $dayData['nutrients'];
+                    $statusColors = [
+                        'ok' => 'bg-green-100 text-green-800',
+                        'under' => 'bg-yellow-100 text-yellow-800',
+                        'warning' => 'bg-orange-100 text-orange-800',
+                        'over' => 'bg-red-100 text-red-800',
+                    ];
+                @endphp
+
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        {{-- Header Zi --}}
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-medium text-gray-900">{{ $day->name }}</h3>
+                            <div class="flex gap-2">
+                                <a href="{{ route('menu-days.edit', $day) }}" class="text-indigo-600 hover:underline text-sm">Editeaza</a>
+                                <form method="POST" action="{{ route('menu-days.destroy', $day) }}" class="inline" onsubmit="return confirm('Sigur vrei sa stergi aceasta zi?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:underline text-sm">Sterge</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        {{-- Sumar Nutrienti Zi --}}
+                        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                            <h4 class="text-sm font-medium text-gray-700 mb-3">Total Zi</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                @php
+                                    $nutrientLabels = [
+                                        'kcal' => 'Calorii',
+                                        'protein_g' => 'Proteine (g)',
+                                        'sodium_mg' => 'Sodiu (mg)',
+                                        'potassium_mg' => 'Potasiu (mg)',
+                                        'phosphorus_mg' => 'Fosfor (mg)',
+                                    ];
+                                @endphp
+                                @foreach($nutrientLabels as $nutrient => $label)
+                                    @php
+                                        $value = $nutrients['totals'][$nutrient] ?? 0;
+                                        $limit = $nutrients['limits'][$nutrient] ?? 0;
+                                        $status = $nutrients['comparison'][$nutrient] ?? 'ok';
+                                    @endphp
+                                    <div>
+                                        <div class="text-xs text-gray-500 uppercase mb-1">{{ $label }}</div>
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="font-medium {{ $statusColors[$status] }} px-2 py-1 rounded text-sm">
+                                                {{ number_format($value, $nutrient === 'kcal' ? 0 : 1) }}
+                                            </span>
+                                            @if($limit > 0)
+                                                <span class="text-gray-400 text-xs">/ {{ number_format($limit, 0) }}</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        {{-- Mese --}}
+                        <div class="space-y-4">
+                            @foreach ($day->meals as $meal)
+                                <div class="border rounded-lg p-4">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h5 class="font-medium text-gray-800">{{ $meal->name }}</h5>
+                                        <a href="{{ route('meal-items.create', $meal) }}"
+                                           class="text-indigo-600 hover:underline text-sm">
+                                            + Adauga Aliment
+                                        </a>
+                                    </div>
+
+                                    @if($meal->items->count() > 0)
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-sm">
+                                                <thead>
+                                                <tr class="text-left text-gray-500 text-xs uppercase">
+                                                    <th class="pb-2 pr-4">Aliment</th>
+                                                    <th class="pb-2 pr-4">Portie</th>
+                                                    <th class="pb-2 pr-4 text-right">Kcal</th>
+                                                    <th class="pb-2 pr-4 text-right">Prot</th>
+                                                    <th class="pb-2 pr-4 text-right">Na</th>
+                                                    <th class="pb-2 pr-4 text-right">K</th>
+                                                    <th class="pb-2 pr-4 text-right">P</th>
+                                                    <th class="pb-2"></th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                @foreach ($meal->items as $item)
+                                                    @php($itemNutrients = $item->calculateNutrients())
+                                                    <tr class="border-t">
+                                                        <td class="py-2 pr-4">{{ $item->name }}</td>
+                                                        <td class="py-2 pr-4 text-gray-600">{{ $item->portion_qty }} {{ $item->portion_unit }}</td>
+                                                        <td class="py-2 pr-4 text-right">{{ number_format($itemNutrients['kcal'], 0) }}</td>
+                                                        <td class="py-2 pr-4 text-right">{{ number_format($itemNutrients['protein_g'], 1) }}</td>
+                                                        <td class="py-2 pr-4 text-right">{{ number_format($itemNutrients['sodium_mg'], 0) }}</td>
+                                                        <td class="py-2 pr-4 text-right">{{ number_format($itemNutrients['potassium_mg'], 0) }}</td>
+                                                        <td class="py-2 pr-4 text-right">{{ number_format($itemNutrients['phosphorus_mg'], 0) }}</td>
+                                                        <td class="py-2 text-right whitespace-nowrap">
+                                                            <a href="{{ route('meal-items.edit', $item) }}" class="text-indigo-600 hover:underline">Edit</a>
+                                                            <form method="POST" action="{{ route('meal-items.destroy', $item) }}" class="inline ml-2" onsubmit="return confirm('Stergi acest aliment?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit" class="text-red-600 hover:underline">X</button>
+                                                            </form>
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    @else
+                                        <p class="text-gray-500 text-sm italic">Niciun aliment adaugat.</p>
+                                    @endif
+                                </div>
+                            @endforeach
+
+                            @if($day->meals->count() === 0)
+                                <p class="text-gray-500 text-sm italic">Nicio masa definita pentru aceasta zi.</p>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+
+            @if(count($daysWithNutrients) === 0)
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6 text-center text-gray-500">
+                        Nicio zi adaugata.
+                        <a href="{{ route('menu-days.create', $menuPlan) }}" class="text-indigo-600 hover:underline">
+                            Adauga prima zi
+                        </a>
+                    </div>
+                </div>
+            @endif
+
+        </div>
+    </div>
+</x-app-layout>
