@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Recipe extends Model
 {
+    use HasFactory;
     protected $fillable = [
         'patient_id',
         'name',
@@ -80,5 +82,26 @@ class Recipe extends Model
     public function getNutrientsPer100Attribute(): array
     {
         return $this->calculateNutrientsForPortion(100);
+    }
+
+    /**
+     * Calculează greutatea totală a rețetei din ingrediente
+     * Sumează toate cantitățile ingredientelor (presupunând aceeași unitate)
+     */
+    public function calculateTotalWeight(): float
+    {
+        return $this->items()->sum('qty');
+    }
+
+    /**
+     * Recalculează și actualizează yield_qty din ingrediente
+     */
+    public function recalculateYield(): void
+    {
+        $totalWeight = $this->calculateTotalWeight();
+
+        if ($totalWeight > 0) {
+            $this->update(['yield_qty' => $totalWeight]);
+        }
     }
 }

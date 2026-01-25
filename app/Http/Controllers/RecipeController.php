@@ -64,6 +64,9 @@ class RecipeController extends Controller
             $data['patient_id'] = null;
         }
 
+        // yield_qty se calculează automat din ingrediente
+        $data['yield_qty'] = 0;
+
         $recipe = Recipe::create($data);
 
         return redirect()
@@ -120,7 +123,6 @@ class RecipeController extends Controller
         return $request->validate([
             'patient_id' => ['nullable', 'integer', 'exists:patients,id'],
             'name' => ['required', 'string', 'max:200'],
-            'yield_qty' => ['required', 'numeric', 'min:1'],
             'yield_unit' => ['required', 'string', 'in:g,ml'],
             'notes' => ['nullable', 'string'],
         ]);

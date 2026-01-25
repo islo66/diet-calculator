@@ -22,16 +22,17 @@
     </div>
 
     <div class="col-span-6 md:col-span-2">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Cantitate Rezultata *</label>
-        <input
-            type="number"
-            name="yield_qty"
-            value="{{ old('yield_qty', $recipe->yield_qty ?? 500) }}"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-            step="1"
-            min="1"
-            required
-        >
+        <label class="block text-sm font-medium text-gray-700 mb-1">Cantitate Totala</label>
+        @if(isset($recipe) && $recipe->exists)
+            <div class="w-full px-3 py-2 bg-gray-100 rounded-md border border-gray-300 text-gray-700">
+                {{ number_format($recipe->yield_qty, 1) }} {{ $recipe->yield_unit }}
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Calculata automat din ingrediente</p>
+        @else
+            <div class="w-full px-3 py-2 bg-gray-100 rounded-md border border-gray-300 text-gray-500 italic">
+                Se calculeaza dupa adaugarea ingredientelor
+            </div>
+        @endif
     </div>
 
     <div class="col-span-6 md:col-span-2">

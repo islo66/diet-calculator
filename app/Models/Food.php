@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -9,7 +10,18 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Food extends Model
 {
+    use HasFactory;
+
     protected $table = 'foods';
+
+    protected $fillable = [
+        'name',
+        'category_id',
+        'default_unit',
+        'density_g_per_ml',
+        'is_active',
+        'notes',
+    ];
 
     public function category(): BelongsTo
     {

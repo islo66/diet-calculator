@@ -26,8 +26,10 @@ class MealItemController extends Controller
             ->orderBy('name')
             ->get();
 
-        $foodsQuery = Food::query();
-        $foods = $foodsQuery->orderBy('name')->get();
+        $foods = Food::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
 
         return view('meal-items.create', compact('menuMeal', 'recipes', 'foods'));
     }
@@ -36,17 +38,26 @@ class MealItemController extends Controller
     {
         $data = $this->validated($request);
         $data['menu_meal_id'] = $menuMeal->id;
-        $data['item_type'] = MealItem::TYPE_RECIPE;
-        $data['food_id'] = null; // Nu folosim alimente direct
+
+        // Setează tipul și ID-urile corespunzătoare
+        if ($data['item_type'] === MealItem::TYPE_FOOD) {
+            $data['recipe_id'] = null;
+        } else {
+            $data['food_id'] = null;
+        }
 
         $maxSort = $menuMeal->items()->max('sort_order') ?? 0;
         $data['sort_order'] = $maxSort + 1;
 
         MealItem::create($data);
 
+        $message = $data['item_type'] === MealItem::TYPE_FOOD
+            ? 'Alimentul a fost adaugat in meniu.'
+            : 'Reteta a fost adaugata in meniu.';
+
         return redirect()
             ->route('menu-plans.show', $menuMeal->menuDay->menu_plan_id)
-            ->with('success', 'Reteta a fost adaugata in meniu.');
+            ->with('success', $message);
     }
 
     public function edit(MealItem $mealItem)
@@ -64,35 +75,58 @@ class MealItemController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('meal-items.edit', compact('mealItem', 'recipes'));
+        $foods = Food::query()
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('meal-items.edit', compact('mealItem', 'recipes', 'foods'));
     }
 
     public function update(Request $request, MealItem $mealItem)
     {
         $data = $this->validated($request);
 
+        // Setează tipul și ID-urile corespunzătoare
+        if ($data['item_type'] === MealItem::TYPE_FOOD) {
+            $data['recipe_id'] = null;
+        } else {
+            $data['food_id'] = null;
+        }
+
         $mealItem->update($data);
+
+        $message = $data['item_type'] === MealItem::TYPE_FOOD
+            ? 'Alimentul a fost actualizat.'
+            : 'Reteta a fost actualizata.';
 
         return redirect()
             ->route('menu-plans.show', $mealItem->menuMeal->menuDay->menu_plan_id)
-            ->with('success', 'Reteta a fost actualizata.');
+            ->with('success', $message);
     }
 
     public function destroy(MealItem $mealItem)
     {
         $menuPlanId = $mealItem->menuMeal->menuDay->menu_plan_id;
+        $isFood = $mealItem->item_type === MealItem::TYPE_FOOD;
         $mealItem->delete();
+
+        $message = $isFood
+            ? 'Alimentul a fost sters din meniu.'
+            : 'Reteta a fost stearsa din meniu.';
 
         return redirect()
             ->route('menu-plans.show', $menuPlanId)
-            ->with('success', 'Reteta a fost stearsa din meniu.');
+            ->with('success', $message);
     }
 
     private function validated(Request $request): array
     {
         return $request->validate([
-            'recipe_id' => ['required', 'integer', 'exists:recipes,id'],
-            'portion_qty' => ['required', 'numeric', 'min:1'],
+            'item_type' => ['required', 'string', 'in:food,recipe'],
+            'food_id' => ['required_if:item_type,food', 'nullable', 'integer', 'exists:foods,id'],
+            'recipe_id' => ['required_if:item_type,recipe', 'nullable', 'integer', 'exists:recipes,id'],
+            'portion_qty' => ['required', 'numeric', 'min:0.001'],
             'portion_unit' => ['required', 'string', 'max:10'],
             'notes' => ['nullable', 'string'],
         ]);
