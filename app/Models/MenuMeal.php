@@ -10,18 +10,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MenuMeal extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'menu_day_id',
+        'meal_type_id',
         'name',
         'sort_order',
     ];
 
+    /**
+     * @deprecated Utilizează MealType model în loc
+     */
     public const MEAL_BREAKFAST = 'Mic dejun';
     public const MEAL_SNACK_AM = 'Gustare AM';
     public const MEAL_LUNCH = 'Pranz';
     public const MEAL_SNACK_PM = 'Gustare PM';
     public const MEAL_DINNER = 'Cina';
 
+    /**
+     * @deprecated Utilizează MealType::active()->ordered()->get() în loc
+     */
     public static function mealTypes(): array
     {
         return [
@@ -36,6 +44,19 @@ class MenuMeal extends Model
     public function menuDay(): BelongsTo
     {
         return $this->belongsTo(MenuDay::class);
+    }
+
+    public function mealType(): BelongsTo
+    {
+        return $this->belongsTo(MealType::class);
+    }
+
+    /**
+     * Returnează numele mesei - din MealType sau din câmpul name
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->mealType?->name ?? $this->name ?? 'Masa';
     }
 
     public function items(): HasMany

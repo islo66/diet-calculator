@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FoodNutrientController;
 use App\Http\Controllers\MealItemController;
+use App\Http\Controllers\MealTypeController;
 use App\Http\Controllers\MenuDayController;
 use App\Http\Controllers\MenuPlanController;
 use App\Http\Controllers\ProfileController;
@@ -42,6 +43,9 @@ Route::middleware('auth')->group(function () {
     Route::get('meal-items/{mealItem}/edit', [MealItemController::class, 'edit'])->name('meal-items.edit');
     Route::put('meal-items/{mealItem}', [MealItemController::class, 'update'])->name('meal-items.update');
     Route::delete('meal-items/{mealItem}', [MealItemController::class, 'destroy'])->name('meal-items.destroy');
+
+    // Meal Types (tipuri de mese)
+    Route::resource('meal-types', MealTypeController::class)->except(['show']);
 
     // Recipes
     Route::resource('recipes', RecipeController::class);
