@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Food;
 use App\Models\MealItem;
 use App\Models\MenuMeal;
 use App\Models\Recipe;
@@ -25,7 +26,10 @@ class MealItemController extends Controller
             ->orderBy('name')
             ->get();
 
-        return view('meal-items.create', compact('menuMeal', 'recipes'));
+        $foodsQuery = Food::query();
+        $foods = $foodsQuery->orderBy('name')->get();
+
+        return view('meal-items.create', compact('menuMeal', 'recipes', 'foods'));
     }
 
     public function store(Request $request, MenuMeal $menuMeal)
