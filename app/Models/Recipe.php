@@ -65,6 +65,11 @@ class Recipe extends Model
     {
         $totalNutrients = $this->calculateTotalNutrients();
 
+        // Dacă rețeta nu are ingrediente (yield_qty = 0), returnează zero
+        if ($this->yield_qty <= 0) {
+            return $totalNutrients; // Toate valorile sunt deja 0
+        }
+
         // Dacă unitățile sunt diferite, ar trebui conversie (simplificat: presupunem aceeași unitate)
         $multiplier = $portionQty / $this->yield_qty;
 
