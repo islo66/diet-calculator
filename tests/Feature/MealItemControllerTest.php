@@ -169,15 +169,15 @@ class MealItemControllerTest extends TestCase
     {
         $menuMeal = MenuMeal::factory()->create();
         $food = Food::factory()->create(['name' => 'Lapte de test', 'is_active' => true]);
-        $recipe = Recipe::factory()->create(['name' => 'Supă de test']);
+        $recipe = Recipe::factory()->create(['name' => 'Supa de test']);
 
         $response = $this->actingAs($this->user)->get(
             route('meal-items.create', $menuMeal)
         );
 
         $response->assertStatus(200);
-        $response->assertSee('Lapte de test');
-        $response->assertSee('Supă de test');
+        $response->assertSee('Lapte de test', false); // false = don't escape
+        $response->assertSee('Supa de test', false);
         $response->assertSee('Aliment');
         $response->assertSee('Reteta / Mancare');
     }

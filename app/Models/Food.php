@@ -39,4 +39,14 @@ class Food extends Model
             ->where('basis_qty', 100)
             ->where('basis_unit', 'g');
     }
+
+    public function recipeItems(): HasMany
+    {
+        return $this->hasMany(RecipeItem::class, 'food_id');
+    }
+
+    public function mealItems(): HasMany
+    {
+        return $this->hasMany(MealItem::class, 'food_id');
+    }
 }

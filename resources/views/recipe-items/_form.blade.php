@@ -1,3 +1,15 @@
+@php
+    $foodOptions = $foods->map(function($food) {
+        $kcal = $food->nutrient?->kcal ?? 0;
+        return [
+            'id' => $food->id,
+            'name' => $food->name,
+            'subtitle' => $food->nutrient ? number_format($kcal, 0) . ' kcal/100' . $food->default_unit : null,
+            'unit' => $food->default_unit,
+        ];
+    })->toArray();
+@endphp
+
 @if ($errors->any())
     <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
         <ul class="list-disc list-inside">
@@ -8,30 +20,28 @@
     </div>
 @endif
 
-<div class="grid grid-cols-12 gap-4">
+<div
+    x-data="{
+        foodOptions: {{ Js::from($foodOptions) }},
+        setUnit(selectedId) {
+            const option = this.foodOptions.find(o => o.id == selectedId);
+            if (option && option.unit) {
+                document.getElementById('unit_select').value = option.unit;
+            }
+        }
+    }"
+    class="grid grid-cols-12 gap-4"
+>
     <div class="col-span-12">
         <label class="block text-sm font-medium text-gray-700 mb-1">Ingredient (Aliment) *</label>
-        <select
+        <x-searchable-select
             name="food_id"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            :options="$foodOptions"
+            :value="old('food_id', $recipeItem->food_id ?? '')"
+            placeholder="Cauta ingredient... (ex: faina, zahar, lapte)"
             required
-            id="food_select"
-        >
-            <option value="">Selecteaza ingredient...</option>
-            @foreach ($foods as $food)
-                <option
-                    value="{{ $food->id }}"
-                    data-unit="{{ $food->default_unit }}"
-                    data-kcal="{{ $food->nutrient?->kcal ?? 0 }}"
-                    {{ old('food_id', $recipeItem->food_id ?? '') == $food->id ? 'selected' : '' }}
-                >
-                    {{ $food->name }}
-                    @if($food->nutrient)
-                        ({{ number_format($food->nutrient->kcal ?? 0, 0) }} kcal / 100{{ $food->default_unit }})
-                    @endif
-                </option>
-            @endforeach
-        </select>
+            @change="setUnit($event.target.value)"
+        />
     </div>
 
     <div class="col-span-6">
@@ -86,13 +96,3 @@
         Anuleaza
     </a>
 </div>
-
-<script>
-document.getElementById('food_select').addEventListener('change', function() {
-    const selected = this.options[this.selectedIndex];
-    const unit = selected.dataset.unit;
-    if (unit) {
-        document.getElementById('unit_select').value = unit;
-    }
-});
-</script>

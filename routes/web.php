@@ -24,13 +24,16 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::get('/foods', [FoodController::class, 'index'])->name('foods.index');
+    // Foods
+    Route::resource('foods', FoodController::class);
+
+    // Nutrients
     Route::resource('nutrients', FoodNutrientController::class)->except(['show']);
 
     // Menu Plans
     Route::resource('menu-plans', MenuPlanController::class);
 
-    // Menu Days (nested pentru create/store)
+    // Menu Days
     Route::get('menu-plans/{menuPlan}/days/create', [MenuDayController::class, 'create'])->name('menu-days.create');
     Route::post('menu-plans/{menuPlan}/days', [MenuDayController::class, 'store'])->name('menu-days.store');
     Route::get('menu-days/{menuDay}/edit', [MenuDayController::class, 'edit'])->name('menu-days.edit');
@@ -44,13 +47,13 @@ Route::middleware('auth')->group(function () {
     Route::put('meal-items/{mealItem}', [MealItemController::class, 'update'])->name('meal-items.update');
     Route::delete('meal-items/{mealItem}', [MealItemController::class, 'destroy'])->name('meal-items.destroy');
 
-    // Meal Types (tipuri de mese)
+    // Meal Types
     Route::resource('meal-types', MealTypeController::class)->except(['show']);
 
     // Recipes
     Route::resource('recipes', RecipeController::class);
 
-    // Recipe Items (ingrediente)
+    // Recipe Items
     Route::get('recipes/{recipe}/items/create', [RecipeItemController::class, 'create'])->name('recipe-items.create');
     Route::post('recipes/{recipe}/items', [RecipeItemController::class, 'store'])->name('recipe-items.store');
     Route::get('recipe-items/{recipeItem}/edit', [RecipeItemController::class, 'edit'])->name('recipe-items.edit');
