@@ -1,0 +1,89 @@
+FROM php:8.2-fpm-alpine AS base
+
+# Install system dependencies and PHP extensions
+RUN apk add --no-cache \
+        icu-libs \
+        libzip \
+        libpng \
+        libjpeg-turbo \
+        freetype \
+        oniguruma \
+        libpq \
+    && apk add --no-cache --virtual .build-deps \
+        icu-dev \
+        libzip-dev \
+        libpng-dev \
+        libjpeg-turbo-dev \
+        freetype-dev \
+        oniguruma-dev \
+        postgresql-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install \
+        pdo_pgsql \
+        mbstring \
+        zip \
+        gd \
+        intl \
+        opcache \
+        bcmath \
+    && apk del .build-deps
+
+# OPcache configuration for production
+RUN { \
+    echo 'opcache.memory_consumption=128'; \
+    echo 'opcache.interned_strings_buffer=8'; \
+    echo 'opcache.max_accelerated_files=4000'; \
+    echo 'opcache.revalidate_freq=0'; \
+    echo 'opcache.validate_timestamps=0'; \
+    echo 'opcache.enable_cli=1'; \
+} > /usr/local/etc/php/conf.d/opcache.ini
+
+# PHP production settings
+RUN { \
+    echo 'upload_max_filesize=10M'; \
+    echo 'post_max_size=12M'; \
+    echo 'memory_limit=256M'; \
+    echo 'max_execution_time=60'; \
+    echo 'expose_php=Off'; \
+} > /usr/local/etc/php/conf.d/app.ini
+
+WORKDIR /var/www
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# ---------- Dependencies stage ----------
+FROM base AS vendor
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# ---------- Frontend build stage ----------
+FROM node:20-alpine AS frontend
+
+WORKDIR /var/www
+COPY package.json package-lock.json vite.config.js ./
+RUN npm ci
+COPY resources/ resources/
+RUN npm run build
+
+# ---------- Final production image ----------
+FROM base AS production
+
+COPY . .
+COPY --from=vendor /var/www/vendor vendor/
+COPY --from=frontend /var/www/public/build public/build/
+
+RUN composer dump-autoload --optimize
+
+# Set permissions
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+USER www-data
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm"]
