@@ -82,11 +82,25 @@
                     ];
                 @endphp
 
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg"
+                     x-data="{
+                        open: localStorage.getItem('day_collapse_{{ $day->id }}') !== 'closed',
+                        toggle() {
+                            this.open = !this.open;
+                            localStorage.setItem('day_collapse_{{ $day->id }}', this.open ? 'open' : 'closed');
+                        }
+                     }">
                     <div class="p-6">
                         {{-- Header Zi --}}
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-lg font-medium text-gray-900">{{ $day->name }}</h3>
+                            <div class="flex items-center gap-2">
+                                <button @click="toggle()" class="text-gray-500 hover:text-gray-700 focus:outline-none transition-transform duration-200" :class="{ 'rotate-90': open }">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </button>
+                                <h3 class="text-lg font-medium text-gray-900 cursor-pointer" @click="toggle()">{{ $day->name }}</h3>
+                            </div>
                             <div class="flex gap-2">
                                 <a href="{{ route('menu-days.edit', $day) }}" class="text-indigo-600 hover:underline text-sm">Editeaza</a>
                                 <form method="POST" action="{{ route('menu-days.destroy', $day) }}" class="inline" onsubmit="return confirm('Sigur vrei sa stergi aceasta zi?')">
@@ -98,7 +112,7 @@
                         </div>
 
                         {{-- Sumar Nutrienti Zi --}}
-                        <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                        <div class="bg-gray-50 rounded-lg p-4" :class="{ 'mb-4': open }">
                             <h4 class="text-sm font-medium text-gray-700 mb-3">Total Zi</h4>
                             <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                                 @php
@@ -132,7 +146,7 @@
                         </div>
 
                         {{-- Mese --}}
-                        <div class="space-y-4">
+                        <div class="space-y-4 mt-4" x-show="open" x-collapse>
                             @foreach ($day->meals as $meal)
                                 <div class="border rounded-lg p-4">
                                     <div class="flex items-center justify-between mb-2">
