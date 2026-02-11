@@ -1,0 +1,27 @@
+name: deploy
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            set -e
+            cd /srv/apps/diet-calculator
+            git fetch --all --tags
+            git checkout ${{ github.ref_name }}
+            if [ -f deploy.sh ]; then
+              chmod +x deploy.sh
+              ./deploy.sh
+            else
+              docker compose up -d --build
+            fi
