@@ -28,7 +28,46 @@ RUN apk add --no-cache \
         bcmath \
     && apk del .build-deps
 
-# OPcache configuration for production
+WORKDIR /var/www
+
+# Install Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# ---------- Local development image ----------
+FROM base AS development
+
+# PHP dev settings (show errors, no opcache caching)
+RUN { \
+    echo 'display_errors=On'; \
+    echo 'error_reporting=E_ALL'; \
+    echo 'upload_max_filesize=10M'; \
+    echo 'post_max_size=12M'; \
+    echo 'memory_limit=256M'; \
+    echo 'opcache.validate_timestamps=1'; \
+    echo 'opcache.revalidate_freq=0'; \
+} > /usr/local/etc/php/conf.d/app.ini
+
+CMD ["php-fpm"]
+
+# ---------- Dependencies stage (production) ----------
+FROM base AS vendor
+
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# ---------- Frontend build stage (production) ----------
+FROM node:20-alpine AS frontend
+
+WORKDIR /var/www
+COPY package.json package-lock.json vite.config.js ./
+RUN npm ci
+COPY resources/ resources/
+RUN npm run build
+
+# ---------- Final production image ----------
+FROM base AS production
+
+# OPcache production settings
 RUN { \
     echo 'opcache.memory_consumption=128'; \
     echo 'opcache.interned_strings_buffer=8'; \
@@ -46,29 +85,6 @@ RUN { \
     echo 'max_execution_time=60'; \
     echo 'expose_php=Off'; \
 } > /usr/local/etc/php/conf.d/app.ini
-
-WORKDIR /var/www
-
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-
-# ---------- Dependencies stage ----------
-FROM base AS vendor
-
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
-
-# ---------- Frontend build stage ----------
-FROM node:20-alpine AS frontend
-
-WORKDIR /var/www
-COPY package.json package-lock.json vite.config.js ./
-RUN npm ci
-COPY resources/ resources/
-RUN npm run build
-
-# ---------- Final production image ----------
-FROM base AS production
 
 COPY . .
 COPY --from=vendor /var/www/vendor vendor/

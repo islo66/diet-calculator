@@ -3,6 +3,7 @@ vendor
 .git
 .env
 .env.local
+.env.docker
 storage/logs/*
 storage/framework/cache/*
 storage/framework/sessions/*
@@ -13,3 +14,6 @@ public/hot
 public/storage
 tests
 .phpunit.result.cache
+docker-compose*.yml
+Makefile
+deploy.sh
