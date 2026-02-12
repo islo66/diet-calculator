@@ -9,6 +9,7 @@ set -e
 DOMAIN="diet-calculator.elsocore.com"
 EMAIL="admin@elsocore.com"
 PROD="-f docker-compose.prod.yml"
+PROJECT_NAME="${COMPOSE_PROJECT_NAME:-diet-calculator}"
 
 echo "=== Diet Calculator — Production Deployment ==="
 echo ""
@@ -21,18 +22,25 @@ if grep -q "your_database_password" .env.production; then
     exit 1
 fi
 
-# 2. Build app container
-echo "[1/5] Building containers..."
+# 2. Stop containers and refresh code-related volumes (keep DB + certs)
+echo "[1/6] Stopping containers..."
+docker compose $PROD down
+
+echo "[2/6] Refreshing code-related volumes (app_public, storage)..."
+docker volume rm "${PROJECT_NAME}_app_public" "${PROJECT_NAME}_storage" 2>/dev/null || true
+
+# 3. Build app container
+echo "[3/6] Building containers..."
 docker compose $PROD build
 
-# 3. Start Nginx on HTTP (needed for ACME challenge) + database
-echo "[2/5] Starting nginx and database..."
+# 4. Start Nginx on HTTP (needed for ACME challenge) + database
+echo "[4/6] Starting nginx and database..."
 docker compose $PROD up -d nginx pgsql
 
-# 4. Obtain SSL certificate (skip if already exists)
+# 5. Obtain SSL certificate (skip if already exists)
 CERT_EXISTS=$(docker compose $PROD run --rm certbot certificates 2>&1 | grep -c "$DOMAIN" || true)
 if [ "$CERT_EXISTS" -eq 0 ]; then
-    echo "[3/5] Obtaining SSL certificate for $DOMAIN..."
+    echo "[5/6] Obtaining SSL certificate for $DOMAIN..."
     docker compose $PROD run --rm certbot certonly \
         --webroot \
         --webroot-path=/var/www/certbot \
@@ -44,11 +52,11 @@ if [ "$CERT_EXISTS" -eq 0 ]; then
     # Reload nginx to pick up the new certificate
     docker compose $PROD exec nginx nginx -s reload
 else
-    echo "[3/5] SSL certificate already exists, skipping."
+    echo "[5/6] SSL certificate already exists, skipping."
 fi
 
-# 5. Start all containers
-echo "[4/5] Starting all containers..."
+# 6. Start all containers
+echo "[6/6] Starting all containers..."
 docker compose $PROD up -d
 
 echo "[5/5] Waiting for app to be ready..."
