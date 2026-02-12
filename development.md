@@ -18,7 +18,7 @@ Services (local):
 - `node` - Vite dev server
 
 Services (prod):
-- `app` - PHP/Laravel
+- `app` - PHP/Laravel (php-fpm)
 - `pgsql` - PostgreSQL
 - `nginx` - reverse proxy (80/443)
 - `certbot` - SSL renew
@@ -41,6 +41,9 @@ Local:
 Production:
 - fill in `.env.production` (DB, APP_KEY, etc.)
 - `deploy.sh` reads `.env.production`
+
+Important:
+- In production, set `APP_KEY` explicitly in `.env.production` and keep it stable. Avoid generating a new key on every container start, otherwise sessions/cookies and encrypted data can break.
 
 ## Local Setup and Development (Docker)
 Recommended first-time setup:
@@ -69,13 +72,26 @@ Seeders available:
 - `FoodsFromCsvSeeder` uses `database/seeders/data/foods.csv`
 - `MealTypeSeeder`
 
+Notes:
+- In production, seeding on every container restart is not recommended unless your seeders are idempotent. Prefer running seeders once (first deploy) or ensure they do not duplicate data.
+
 ## Production Deployment
 Server prerequisites:
 - Docker + Docker Compose installed
 - Ports 80/443 open
 
+Production volume strategy (important):
+- Use a single shared volume `app_code` mounted to `/var/www` for BOTH `app` and `nginx`.
+- Use a separate volume `storage` for `/var/www/storage/app`.
+- The production image should include:
+  - `vendor/` (via `composer install --no-dev` during Docker build)
+  - `public/build` (via `npm run build` during Docker build)
+- The production `entrypoint.sh` should bootstrap the persistent volume:
+  - If `/var/www/artisan` is missing (empty volume), copy app files from the image (e.g. `/app`) into `/var/www`
+  - Then run migrations/cache (and optionally seeders) and start php-fpm
+
 Steps:
-1. Configure `.env.production` with real credentials.
+1. Configure `.env.production` with real credentials (DB, `APP_KEY`, etc.).
 2. Run deploy:
    - `make deploy` or `bash deploy.sh`
 3. The script will:
@@ -106,5 +122,7 @@ If you run it manually:
 - `make npm cmd="run dev -- --host 0.0.0.0"`
 
 ## Notes
-- In production, volume `app_public` is used for `public/`, and `storage` for `storage/app` files.
-- `deploy.sh` uses the domain configured in the script. Update it if you deploy to a different domain.
+- If you see containers restarting in production, check logs first:
+  - `docker logs --tail=200 diet-calculator-app-1`
+  - `docker logs --tail=200 diet-calculator-nginx-1`
+- Common production issues are missing `vendor/` (composer not run during build) or an empty mounted volume at `/var/www` without bootstrap copy logic.
