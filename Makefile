@@ -133,6 +133,9 @@ ssl-renew: ## Renew SSL certificate
 	docker compose $(PROD) run --rm certbot renew
 	docker compose $(PROD) exec nginx nginx -s reload
 
+prod-restart:
+	docker compose -f docker-compose.prod.yml build --no-cache app && docker compose -f docker-compose.prod.yml up -d --force-recreate app nginx
+
 # ------------------------------------------------------------------------------
 # Help
 # ------------------------------------------------------------------------------
