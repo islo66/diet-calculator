@@ -23,7 +23,7 @@ services:
     volumes:
       - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
       - app_code:/var/www:ro
-      - certbot_webroot:/var/www/certbot:ro
+      - certbot_webroot:/usr/share/nginx/html:ro
       - certbot_certs:/etc/letsencrypt:ro
     depends_on:
       - app
