@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     env_file: .env.production
     volumes:
-      - app_public:/var/www/public
+      - app_code:/var/www
       - storage:/var/www/storage/app
     depends_on:
       pgsql:
@@ -22,7 +22,7 @@ services:
       - "443:443"
     volumes:
       - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
-      - app_public:/var/www/public:ro
+      - app_code:/var/www:ro
       - certbot_webroot:/var/www/certbot:ro
       - certbot_certs:/etc/letsencrypt:ro
     depends_on:
@@ -57,7 +57,7 @@ services:
 volumes:
   pgsql_data:
   storage:
-  app_public:
+  app_code:
   certbot_webroot:
   certbot_certs:
 

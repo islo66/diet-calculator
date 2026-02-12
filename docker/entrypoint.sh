@@ -3,6 +3,19 @@ set -e
 
 echo "=== Diet Calculator — Container Startup ==="
 
+if [ ! -f /var/www/artisan ]; then
+    echo "App code not found in /var/www. Copying from image..."
+    mkdir -p /var/www
+    cp -a /app/. /var/www/
+fi
+
+cd /var/www
+
+if [ ! -f /var/www/vendor/autoload.php ]; then
+    echo "ERROR: vendor/autoload.php not found. Production image must include composer vendor."
+    exit 1
+fi
+
 # Generate app key if not set
 if [ -z "$APP_KEY" ]; then
     echo "Generating application key..."
@@ -18,9 +31,9 @@ php artisan storage:link --force 2>/dev/null || true
 
 # Cache config, routes, views
 echo "Caching configuration..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:cache || true
+php artisan route:cache || true
+php artisan view:cache || true
 
 # Seed data
 echo "Seeding data..."
