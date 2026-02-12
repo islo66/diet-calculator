@@ -16,11 +16,12 @@ if [ ! -f /var/www/vendor/autoload.php ]; then
     exit 1
 fi
 
+### TODO is comment because not working on server now
 # Generate app key if not set
-if [ -z "$APP_KEY" ]; then
-    echo "Generating application key..."
-    php artisan key:generate --force
-fi
+#if [ -z "$APP_KEY" ]; then
+#    echo "Generating application key..."
+#    php artisan key:generate --force
+#fi
 
 # Run migrations
 echo "Running migrations..."
