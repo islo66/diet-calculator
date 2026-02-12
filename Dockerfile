@@ -61,7 +61,7 @@ FROM node:20-alpine AS frontend
 WORKDIR /var/www
 COPY package.json package-lock.json vite.config.js ./
 RUN npm ci
-COPY resources/ resources/
+COPY package.json package-lock.json vite.config.js tailwind.config.* postcss.config.* ./
 RUN npm run build
 
 # ---------- Final production image ----------
