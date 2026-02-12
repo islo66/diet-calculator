@@ -59,9 +59,9 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 FROM node:20-alpine AS frontend
 
 WORKDIR /var/www
-COPY package.json package-lock.json vite.config.js ./
-RUN npm ci
 COPY package.json package-lock.json vite.config.js tailwind.config.* postcss.config.* ./
+RUN npm ci
+COPY resources/ resources/
 RUN npm run build
 
 # ---------- Final production image ----------
