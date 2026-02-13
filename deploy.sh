@@ -66,6 +66,9 @@ until docker compose $PROD exec app php artisan about > /dev/null 2>&1; do
     sleep 2
 done
 
+echo "[6/6] Running database seeders..."
+docker compose $PROD exec app php artisan db:seed --force
+
 echo ""
 echo "=== Deployment complete! ==="
 echo "Visit: https://$DOMAIN"
