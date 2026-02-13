@@ -78,9 +78,21 @@ return [
     |
     */
 
-    'locale' => env('APP_LOCALE', 'en'),
+    'locale' => env('APP_LOCALE', 'ro'),
 
-    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'en'),
+    'fallback_locale' => env('APP_FALLBACK_LOCALE', 'ro'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Supported Locales
+    |--------------------------------------------------------------------------
+    |
+    | Define the locales supported by the application. Keep keys in English
+    | and add new locales here when expanding translations.
+    |
+    */
+
+    'supported_locales' => ['ro'],
 
     'faker_locale' => env('APP_FAKER_LOCALE', 'en_US'),
 

@@ -33,7 +33,7 @@
     class="grid grid-cols-12 gap-4"
 >
     <div class="col-span-12">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Ingredient (Aliment) *</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.recipe_items.ingredient_food') }} *</label>
         <x-searchable-select
             name="food_id"
             :options="$foodOptions"
@@ -45,12 +45,12 @@
     </div>
 
     <div class="col-span-6">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Cantitate *</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.meal_items.quantity') }} *</label>
         <input
             type="number"
             name="qty"
             value="{{ old('qty', $recipeItem->qty ?? 100) }}"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
             step="0.001"
             min="0.001"
             required
@@ -58,25 +58,25 @@
     </div>
 
     <div class="col-span-6">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Unitate *</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.foods.unit') }} *</label>
         <select
             name="unit"
             id="unit_select"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
             required
         >
-            <option value="g" {{ old('unit', $recipeItem->unit ?? 'g') === 'g' ? 'selected' : '' }}>g (grame)</option>
-            <option value="ml" {{ old('unit', $recipeItem->unit ?? '') === 'ml' ? 'selected' : '' }}>ml (mililitri)</option>
-            <option value="pcs" {{ old('unit', $recipeItem->unit ?? '') === 'pcs' ? 'selected' : '' }}>pcs (bucati)</option>
+            <option value="g" {{ old('unit', $recipeItem->unit ?? 'g') === 'g' ? 'selected' : '' }}>{{ __('app.units.g') }}</option>
+            <option value="ml" {{ old('unit', $recipeItem->unit ?? '') === 'ml' ? 'selected' : '' }}>{{ __('app.units.ml') }}</option>
+            <option value="pcs" {{ old('unit', $recipeItem->unit ?? '') === 'pcs' ? 'selected' : '' }}>{{ __('app.units.pcs') }}</option>
         </select>
     </div>
 
     <div class="col-span-12">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.common.notes') }}</label>
         <textarea
             name="notes"
             rows="2"
-            class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
             placeholder="Ex: tocat marunt, fiert, crud..."
         >{{ old('notes', $recipeItem->notes ?? '') }}</textarea>
     </div>
@@ -85,7 +85,7 @@
 <div class="mt-6 flex items-center gap-4">
     <button
         type="submit"
-        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700"
+        class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700"
     >
         Salveaza
     </button>

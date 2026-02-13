@@ -1,14 +1,14 @@
 <x-app-layout>
     <x-slot name="breadcrumbs">
-        <x-breadcrumb :href="route('foods.index')">Alimente</x-breadcrumb>
+        <x-breadcrumb :href="route('foods.index')">{{ __('app.foods.title') }}</x-breadcrumb>
         <x-breadcrumb-separator />
         <x-breadcrumb :href="route('foods.show', $food)">{{ $food->name }}</x-breadcrumb>
         <x-breadcrumb-separator />
-        <x-breadcrumb :active="true">Editeaza</x-breadcrumb>
+        <x-breadcrumb :active="true">{{ __('app.common.edit') }}</x-breadcrumb>
     </x-slot>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Editeaza: {{ $food->name }}</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('app.foods.edit') }}: {{ $food->name }}</h2>
     </x-slot>
 
     <div class="py-6">

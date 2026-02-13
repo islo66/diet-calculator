@@ -5,7 +5,22 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        @php
+            $routeName = request()->route()?->getName() ?? '';
+            $routeTitles = [
+                'login' => 'app.titles.login',
+                'register' => 'app.titles.register',
+                'password.request' => 'app.titles.forgot_password',
+                'password.reset' => 'app.titles.reset_password',
+                'verification.notice' => 'app.titles.verify_email',
+                'password.confirm' => 'app.titles.confirm_password',
+            ];
+            $pageTitle = $title ?? $attributes->get('title') ?? __($routeTitles[$routeName] ?? 'app.titles.welcome');
+        @endphp
+
+        <title>{{ $pageTitle }} - {{ config('app.name', 'Diet Calculator') }}</title>
+
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=1">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

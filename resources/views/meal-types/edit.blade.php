@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="breadcrumbs">
-        <x-breadcrumb :href="route('meal-types.index')">Tipuri de Mese</x-breadcrumb>
+        <x-breadcrumb :href="route('meal-types.index')">{{ __('app.meal_types.title') }}</x-breadcrumb>
         <x-breadcrumb-separator />
         <x-breadcrumb :active="true">{{ $mealType->name }}</x-breadcrumb>
     </x-slot>
@@ -9,7 +9,7 @@
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
             Editeaza: {{ $mealType->name }}
             @if($mealType->is_default)
-                <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                <span class="ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-100 text-emerald-800">
                     Default
                 </span>
             @endif

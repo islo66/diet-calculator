@@ -1,10 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">Nutrients</h2>
+            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('app.nutrients.title') }}</h2>
             <a
                 href="{{ route('nutrients.create', array_filter(['food_id' => $foodId])) }}"
-                class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700"
+                class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700"
             >
                 Add
             </a>
@@ -19,23 +19,23 @@
                     <form method="GET" action="{{ route('nutrients.index') }}" class="mb-6">
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-12 md:items-end">
                             <div class="md:col-span-6">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Search (food name)</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.nutrients.search_food') }}</label>
                                 <input
                                     type="text"
                                     name="q"
                                     value="{{ $q }}"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                                     placeholder="Search by food..."
                                 >
                             </div>
 
                             <div class="md:col-span-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Food</label>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('app.foods.title') }}</label>
                                 <select
                                     name="food_id"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                                 >
-                                    <option value="">All</option>
+                                    <option value="">{{ __('app.common.all') }}</option>
                                     @foreach ($foods as $f)
                                         <option value="{{ $f->id }}" {{ (string)$foodId === (string)$f->id ? 'selected' : '' }}>
                                             {{ $f->name }}
@@ -48,7 +48,7 @@
                                 <div class="flex gap-2 md:justify-end">
                                     <button
                                         type="submit"
-                                        class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 w-full md:w-auto"
+                                        class="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 w-full md:w-auto"
                                     >
                                         Apply
                                     </button>
@@ -67,16 +67,16 @@
                         <table class="w-full border-collapse text-sm">
                             <thead>
                                 <tr class="bg-gray-50">
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">ID</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Food</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Basis</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Kcal</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Protein</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Fat</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Carb</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">Na</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">K</th>
-                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">P</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.table.id') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.foods.title') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.basis') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.kcal_short') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.protein') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.fat') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.carb') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.sodium_short') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.potassium_short') }}</th>
+                                    <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b">{{ __('app.nutrients.phosphorus_short') }}</th>
                                     <th class="px-4 py-3 text-left font-semibold text-gray-700 border-b"></th>
                                 </tr>
                             </thead>
@@ -95,18 +95,18 @@
                                         <td class="px-4 py-3 border-b">{{ $n->phosphorus_mg ?? '—' }}</td>
                                         <td class="px-4 py-3 border-b">
                                             <div class="flex items-center gap-3 justify-end">
-                                                <a href="{{ route('nutrients.edit', $n) }}" class="text-indigo-600 hover:underline">Edit</a>
+                                                <a href="{{ route('nutrients.edit', $n) }}" class="text-emerald-600 hover:underline">{{ __('app.common.edit') }}</a>
                                                 <form method="POST" action="{{ route('nutrients.destroy', $n) }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                                                    <button type="submit" class="text-red-600 hover:underline">{{ __('app.common.delete') }}</button>
                                                 </form>
                                             </div>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td class="px-4 py-3 border-b text-gray-500" colspan="11">No results.</td>
+                                        <td class="px-4 py-3 border-b text-gray-500" colspan="11">{{ __('app.common.no_results') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -119,10 +119,10 @@
                                 <input type="hidden" name="{{ $k }}" value="{{ $v }}">
                             @endforeach
 
-                            <label class="text-sm text-gray-700">Per page</label>
+                            <label class="text-sm text-gray-700">{{ __('app.table.per_page') }}</label>
                             <select
                                 name="per_page"
-                                class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                class="rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                                 onchange="this.form.submit()"
                             >
                                 @foreach ([10,25,50,100] as $pp)

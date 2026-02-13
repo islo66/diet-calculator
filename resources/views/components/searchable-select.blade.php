@@ -2,7 +2,7 @@
     'name',
     'options' => [],
     'value' => null,
-    'placeholder' => 'Cauta...',
+    'placeholder' => __('app.common.search') . '...',
     'displayKey' => 'name',
     'valueKey' => 'id',
     'required' => false,
@@ -104,7 +104,7 @@
         <template x-if="selectedValue && !open">
             <div
                 @click="open = true; $nextTick(() => $refs.searchInput.focus())"
-                class="w-full rounded-md border-gray-300 shadow-sm bg-white px-3 py-2 pr-10 cursor-pointer border focus:border-indigo-500 focus:ring-indigo-500 flex items-center justify-between"
+                class="w-full rounded-md border-gray-300 shadow-sm bg-white px-3 py-2 pr-10 cursor-pointer border focus:border-emerald-500 focus:ring-emerald-500 flex items-center justify-between"
             >
                 <span x-text="selectedText" class="truncate"></span>
                 <button
@@ -127,7 +127,7 @@
                 @focus="open = true"
                 @keydown="handleKeydown($event)"
                 placeholder="{{ $placeholder }}"
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500"
                 autocomplete="off"
             >
         </template>
@@ -148,10 +148,10 @@
         <template x-if="filteredOptions.length === 0">
             <div class="px-3 py-2 text-gray-500 text-sm">
                 <template x-if="search.length > 0">
-                    <span>Niciun rezultat pentru "<span x-text="search"></span>"</span>
+                    <span>{{ __('app.search.no_results_prefix') }} "<span x-text="search"></span>"</span>
                 </template>
                 <template x-if="search.length === 0">
-                    <span>Nu exista optiuni</span>
+                    <span>{{ __('app.search.no_options') }}</span>
                 </template>
             </div>
         </template>
@@ -161,21 +161,21 @@
                 @click="selectOption(option)"
                 @mouseenter="highlightedIndex = index"
                 :class="{
-                    'bg-indigo-600 text-white': highlightedIndex === index,
+                    'bg-emerald-600 text-white': highlightedIndex === index,
                     'text-gray-900 hover:bg-gray-100': highlightedIndex !== index
                 }"
                 class="px-3 py-2 cursor-pointer text-sm"
             >
                 <span x-text="option[displayKey]"></span>
                 <template x-if="option.subtitle">
-                    <span class="ml-2 text-xs" :class="highlightedIndex === index ? 'text-indigo-200' : 'text-gray-500'" x-text="option.subtitle"></span>
+                    <span class="ml-2 text-xs" :class="highlightedIndex === index ? 'text-emerald-200' : 'text-gray-500'" x-text="option.subtitle"></span>
                 </template>
             </div>
         </template>
 
         <template x-if="filteredOptions.length >= limit && search.length === 0">
             <div class="px-3 py-2 text-xs text-gray-400 border-t">
-                Afisate primele {{ $limit }} rezultate. Scrie pentru a cauta...
+                {{ __('app.search.limit_prefix', ['count' => $limit]) }}
             </div>
         </template>
     </div>

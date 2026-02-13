@@ -2,7 +2,7 @@
 
 <li class="inline-flex items-center">
     @if($href && !$active)
-        <a href="{{ $href }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-indigo-600">
+        <a href="{{ $href }}" class="inline-flex items-center text-sm font-medium text-gray-500 hover:text-emerald-600">
             {{ $slot }}
         </a>
     @else

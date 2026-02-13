@@ -1,12 +1,12 @@
 <x-app-layout>
     <x-slot name="breadcrumbs">
-        <x-breadcrumb :href="route('recipes.index')">Retete</x-breadcrumb>
+        <x-breadcrumb :href="route('recipes.index')">{{ __('app.recipes.title') }}</x-breadcrumb>
         <x-breadcrumb-separator />
-        <x-breadcrumb :active="true">Reteta Noua</x-breadcrumb>
+        <x-breadcrumb :active="true">{{ __('app.recipes.new') }}</x-breadcrumb>
     </x-slot>
 
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">Adauga Reteta</h2>
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('app.recipes.add') }}</h2>
     </x-slot>
 
     <div class="py-6">

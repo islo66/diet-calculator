@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="breadcrumbs">
-        <x-breadcrumb :href="route('menu-plans.index')">Planuri</x-breadcrumb>
+        <x-breadcrumb :href="route('menu-plans.index')">{{ __('app.menu_plans.breadcrumb') }}</x-breadcrumb>
         <x-breadcrumb-separator />
         <x-breadcrumb :href="route('menu-plans.show', $mealItem->menuMeal->menuDay->menuPlan)">{{ $mealItem->menuMeal->menuDay->menuPlan->name }}</x-breadcrumb>
         <x-breadcrumb-separator />
@@ -11,7 +11,7 @@
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Editeaza: {{ $mealItem->name }}
+            {{ __('app.common.edit') }}: {{ $mealItem->name }}
         </h2>
     </x-slot>
 

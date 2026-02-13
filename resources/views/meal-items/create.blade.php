@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="breadcrumbs">
-        <x-breadcrumb :href="route('menu-plans.index')">Planuri</x-breadcrumb>
+        <x-breadcrumb :href="route('menu-plans.index')">{{ __('app.menu_plans.breadcrumb') }}</x-breadcrumb>
         <x-breadcrumb-separator />
         <x-breadcrumb :href="route('menu-plans.show', $menuMeal->menuDay->menuPlan)">{{ $menuMeal->menuDay->menuPlan->name }}</x-breadcrumb>
         <x-breadcrumb-separator />
@@ -11,7 +11,7 @@
 
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            Adauga Aliment in: {{ $menuMeal->name }}
+            {{ __('app.meal_items.add_in', ['name' => $menuMeal->name]) }}
         </h2>
     </x-slot>
 
