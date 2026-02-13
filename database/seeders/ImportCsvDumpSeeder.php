@@ -246,13 +246,32 @@ class ImportCsvDumpSeeder extends Seeder
             return 0;
         }
 
+        $payload = $batch;
+
+        // If upsert key is not id, inserting explicit ids can violate existing PKs.
+        if (
+            $uniqueBy !== []
+            && !in_array('id', $uniqueBy, true)
+            && Schema::hasColumn($table, 'id')
+        ) {
+            $payload = array_map(static function (array $row): array {
+                unset($row['id']);
+                return $row;
+            }, $batch);
+        }
+
         if ($uniqueBy !== [] && $updateColumns !== []) {
-            DB::table($table)->upsert($batch, $uniqueBy, $updateColumns);
+            $effectiveUpdateColumns = array_values(array_filter(
+                $updateColumns,
+                static fn (string $column) => !($column === 'id' && !in_array('id', $uniqueBy, true))
+            ));
+
+            DB::table($table)->upsert($payload, $uniqueBy, $effectiveUpdateColumns);
             $this->captureIdRemap($table, $batch, $uniqueBy);
             return count($batch);
         }
 
-        DB::table($table)->insertOrIgnore($batch);
+        DB::table($table)->insertOrIgnore($payload);
         $this->captureIdRemap($table, $batch, $uniqueBy);
         return count($batch);
     }
