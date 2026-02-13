@@ -10,6 +10,7 @@ DOMAIN="diet-calculator.elsocore.com"
 EMAIL="admin@elsocore.com"
 PROD="-f docker-compose.prod.yml"
 PROJECT_NAME="${COMPOSE_PROJECT_NAME:-diet-calculator}"
+APP_VERSION="${APP_VERSION:-$(git describe --tags --abbrev=0 2>/dev/null || echo dev)}"
 
 echo "=== Diet Calculator — Production Deployment ==="
 echo ""
@@ -30,8 +31,8 @@ echo "[2/6] Refreshing code-related volumes (app_public, storage)..."
 docker volume rm "${PROJECT_NAME}_app_public" "${PROJECT_NAME}_storage" 2>/dev/null || true
 
 # 3. Build app container
-echo "[3/6] Building containers..."
-docker compose $PROD build
+echo "[3/6] Building containers (APP_VERSION=$APP_VERSION)..."
+docker compose $PROD build --build-arg APP_VERSION="$APP_VERSION"
 
 # 4. Start Nginx on HTTP (needed for ACME challenge) + database
 echo "[4/6] Starting nginx and database..."

@@ -62,7 +62,10 @@ WORKDIR /var/www
 COPY package.json package-lock.json vite.config.js tailwind.config.* postcss.config.* ./
 RUN npm ci
 COPY resources/ resources/
-RUN npm run build
+COPY public/ public/
+RUN npm run build \
+    && test -f public/build/manifest.json \
+    && ! grep -R "@tailwind" -n public/build/assets/*.css
 
 # ---------- Final production image ----------
 FROM base AS production
@@ -86,11 +89,17 @@ RUN { \
     echo 'expose_php=Off'; \
 } > /usr/local/etc/php/conf.d/app.ini
 
+ARG APP_VERSION=dev
+ENV APP_VERSION=$APP_VERSION
+
 COPY . .
 COPY --from=vendor /var/www/vendor vendor/
 COPY --from=frontend /var/www/public/build public/build/
 
 RUN composer dump-autoload --optimize
+
+# Keep a copy of built assets outside the public volume.
+RUN mkdir -p /opt/build && cp -R public/build /opt/build/
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache \

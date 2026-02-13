@@ -19,6 +19,7 @@
         <title>{{ __('app.titles.home') }} - {{ config('app.name', 'Diet Calculator') }}</title>
 
         <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=1">
+        <meta name="app-version" content="{{ config('app.version') }}">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600&display=swap" rel="stylesheet" />

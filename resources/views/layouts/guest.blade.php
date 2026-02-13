@@ -21,6 +21,7 @@
         <title>{{ $pageTitle }} - {{ config('app.name', 'Diet Calculator') }}</title>
 
         <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=1">
+        <meta name="app-version" content="{{ config('app.version') }}">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">

@@ -11,6 +11,13 @@ fi
 
 cd /var/www
 
+# Populate public build assets if volume is empty.
+if [ ! -d /var/www/public/build ] && [ -d /opt/build/build ]; then
+    echo "Restoring public build assets..."
+    mkdir -p /var/www/public
+    cp -R /opt/build/build /var/www/public/build
+fi
+
 if [ ! -f /var/www/vendor/autoload.php ]; then
     echo "ERROR: vendor/autoload.php not found. Production image must include composer vendor."
     exit 1

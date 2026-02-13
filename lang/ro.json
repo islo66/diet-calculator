@@ -295,5 +295,14 @@
   "app.auth.verify_email_help": "Multumim pentru inregistrare! Inainte de a incepe, verifica adresa de email folosind linkul pe care tocmai ti l-am trimis. Daca nu ai primit emailul, iti trimitem altul.",
   "app.auth.resend_verification": "Retrimite emailul de verificare",
   "app.auth.simple_fast_focused": "Simplu, rapid si focusat.",
-  "app.table.id": "ID"
+  "app.table.id": "ID",
+  "app.profile.update_password_title": "Actualizeaza parola",
+  "app.profile.update_password_subtitle": "Asigura-te ca folosesti o parola lunga si aleatoare pentru a ramane in siguranta.",
+  "app.profile.current_password": "Parola curenta",
+  "app.profile.new_password": "Parola noua",
+  "app.profile.confirm_password": "Confirma parola",
+  "app.profile.delete_account_title": "Sterge contul",
+  "app.profile.delete_account_subtitle": "Odata sters, toate resursele si datele vor fi eliminate definitiv. Descarca inainte tot ce vrei sa pastrezi.",
+  "app.profile.delete_account_confirm_title": "Sigur vrei sa stergi contul?",
+  "app.profile.delete_account_confirm_subtitle": "Odata sters, toate resursele si datele vor fi eliminate definitiv. Introdu parola pentru confirmare."
 }
