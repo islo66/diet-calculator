@@ -39,10 +39,10 @@ echo "[4/6] Starting nginx and database..."
 docker compose $PROD up -d nginx pgsql
 
 # 5. Obtain SSL certificate (skip if already exists)
-CERT_EXISTS=$(docker compose $PROD run --rm certbot certificates 2>&1 | grep -c "$DOMAIN" || true)
+CERT_EXISTS=$(docker compose $PROD run --rm --entrypoint certbot certbot certificates 2>&1 | grep -c "$DOMAIN" || true)
 if [ "$CERT_EXISTS" -eq 0 ]; then
     echo "[5/6] Obtaining SSL certificate for $DOMAIN..."
-    docker compose $PROD run --rm certbot certonly \
+    docker compose $PROD run --rm --entrypoint certbot certbot certonly \
         --webroot \
         --webroot-path=/var/www/certbot \
         --email "$EMAIL" \
