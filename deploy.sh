@@ -24,24 +24,37 @@ if grep -q "your_database_password" .env.production; then
 fi
 
 # 2. Stop containers and refresh code-related volumes (keep DB + certs)
-echo "[1/6] Stopping containers..."
+echo "[1/7] Stopping containers..."
 docker compose $PROD down
 
-echo "[2/6] Refreshing code-related volumes (app_code, storage)..."
+echo "[2/7] Refreshing code-related volumes (app_code, storage)..."
 docker volume rm "${PROJECT_NAME}_app_code" "${PROJECT_NAME}_storage" 2>/dev/null || true
 
 # 3. Build app container
-echo "[3/6] Building containers (APP_VERSION=$APP_VERSION)..."
+echo "[3/7] Building containers (APP_VERSION=$APP_VERSION)..."
 docker compose $PROD build --build-arg APP_VERSION="$APP_VERSION"
 
-# 4. Start Nginx on HTTP (needed for ACME challenge) + database
-echo "[4/6] Starting nginx and database..."
+# 4. Ensure SSL cert exists (use temporary self-signed if missing)
+CERT_PATH="/etc/letsencrypt/live/$DOMAIN"
+if ! docker compose $PROD run --rm --entrypoint sh certbot -c "test -f ${CERT_PATH}/fullchain.pem && test -f ${CERT_PATH}/privkey.pem"; then
+    echo "[4/7] Creating temporary self-signed certificate for $DOMAIN..."
+    docker run --rm -v "${PROJECT_NAME}_certbot_certs:/etc/letsencrypt" alpine:3.19 sh -c "\
+      apk add --no-cache openssl >/dev/null && \
+      mkdir -p ${CERT_PATH} && \
+      openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
+        -keyout ${CERT_PATH}/privkey.pem \
+        -out ${CERT_PATH}/fullchain.pem \
+        -subj \"/CN=${DOMAIN}\" >/dev/null 2>&1"
+fi
+
+# 5. Start Nginx on HTTP (needed for ACME challenge) + database
+echo "[5/7] Starting nginx and database..."
 docker compose $PROD up -d nginx pgsql
 
-# 5. Obtain SSL certificate (skip if already exists)
+# 6. Obtain SSL certificate (skip if already exists)
 CERT_EXISTS=$(docker compose $PROD run --rm --entrypoint certbot certbot certificates 2>&1 | grep -c "$DOMAIN" || true)
 if [ "$CERT_EXISTS" -eq 0 ]; then
-    echo "[5/6] Obtaining SSL certificate for $DOMAIN..."
+    echo "[6/7] Obtaining SSL certificate for $DOMAIN..."
     docker compose $PROD run --rm --entrypoint certbot certbot certonly \
         --webroot \
         --webroot-path=/var/www/certbot \
@@ -53,20 +66,20 @@ if [ "$CERT_EXISTS" -eq 0 ]; then
     # Reload nginx to pick up the new certificate
     docker compose $PROD exec nginx nginx -s reload
 else
-    echo "[5/6] SSL certificate already exists, skipping."
+    echo "[6/7] SSL certificate already exists, skipping."
 fi
 
-# 6. Start all containers
-echo "[6/6] Starting all containers..."
+# 7. Start all containers
+echo "[7/7] Starting all containers..."
 docker compose $PROD up -d
 
-echo "[5/5] Waiting for app to be ready..."
+echo "[7/7] Waiting for app to be ready..."
 sleep 5
 until docker compose $PROD exec app php artisan about > /dev/null 2>&1; do
     sleep 2
 done
 
-echo "[6/6] Running database seeders..."
+echo "[7/7] Running database seeders..."
 docker compose $PROD exec app php artisan db:seed --force
 
 echo ""
