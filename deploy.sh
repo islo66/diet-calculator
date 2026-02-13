@@ -27,8 +27,8 @@ fi
 echo "[1/6] Stopping containers..."
 docker compose $PROD down
 
-echo "[2/6] Refreshing code-related volumes (app_public, storage)..."
-docker volume rm "${PROJECT_NAME}_app_public" "${PROJECT_NAME}_storage" 2>/dev/null || true
+echo "[2/6] Refreshing code-related volumes (app_code, storage)..."
+docker volume rm "${PROJECT_NAME}_app_code" "${PROJECT_NAME}_storage" 2>/dev/null || true
 
 # 3. Build app container
 echo "[3/6] Building containers (APP_VERSION=$APP_VERSION)..."
