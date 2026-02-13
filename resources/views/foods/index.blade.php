@@ -6,10 +6,16 @@
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('app.foods.title') }}</h2>
-            <a href="{{ route('foods.create') }}"
-               class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700">
-                {{ __('app.foods.add') }}
-            </a>
+            <div class="flex items-center gap-2">
+                <a href="{{ route('foods.duplicates') }}"
+                   class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-50">
+                    Merge duplicate
+                </a>
+                <a href="{{ route('foods.create') }}"
+                   class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700">
+                    {{ __('app.foods.add') }}
+                </a>
+            </div>
         </div>
     </x-slot>
 

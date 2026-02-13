@@ -25,6 +25,10 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Foods duplicate merge
+    Route::get('foods/duplicates/merge', [FoodController::class, 'duplicates'])->name('foods.duplicates');
+    Route::post('foods/duplicates/merge', [FoodController::class, 'mergeDuplicates'])->name('foods.duplicates.merge');
+
     // Foods
     Route::resource('foods', FoodController::class);
 
