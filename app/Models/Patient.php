@@ -43,6 +43,11 @@ class Patient extends Model
         return $this->hasMany(MenuPlan::class);
     }
 
+    public function recipes(): HasMany
+    {
+        return $this->hasMany(Recipe::class);
+    }
+
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";

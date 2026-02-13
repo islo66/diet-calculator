@@ -5,6 +5,7 @@ use App\Http\Controllers\MealItemController;
 use App\Http\Controllers\MealTypeController;
 use App\Http\Controllers\MenuDayController;
 use App\Http\Controllers\MenuPlanController;
+use App\Http\Controllers\PatientController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FoodController;
 use App\Http\Controllers\RecipeController;
@@ -32,6 +33,9 @@ Route::middleware('auth')->group(function () {
 
     // Menu Plans
     Route::resource('menu-plans', MenuPlanController::class);
+
+    // Patients
+    Route::resource('patients', PatientController::class);
 
     // Menu Days
     Route::get('menu-plans/{menuPlan}/days/create', [MenuDayController::class, 'create'])->name('menu-days.create');

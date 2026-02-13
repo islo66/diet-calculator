@@ -1,0 +1,27 @@
+<x-app-layout>
+    <x-slot name="breadcrumbs">
+        <x-breadcrumb :href="route('patients.index')">{{ __('app.patients.title') }}</x-breadcrumb>
+        <x-breadcrumb-separator />
+        <x-breadcrumb :href="route('patients.show', $patient)">{{ $patient->full_name }}</x-breadcrumb>
+        <x-breadcrumb-separator />
+        <x-breadcrumb :active="true">{{ __('app.common.edit') }}</x-breadcrumb>
+    </x-slot>
+
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('app.patients.edit') }}: {{ $patient->full_name }}</h2>
+    </x-slot>
+
+    <div class="py-6">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    <form method="POST" action="{{ route('patients.update', $patient) }}">
+                        @csrf
+                        @method('PUT')
+                        @include('patients._form')
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</x-app-layout>
