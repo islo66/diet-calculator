@@ -7,6 +7,7 @@ use App\Models\MenuDay;
 use App\Models\Patient;
 use App\Services\NutrientCalculatorService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class MenuPlanController extends Controller
 {
@@ -99,69 +100,29 @@ class MenuPlanController extends Controller
 
     public function pdf(MenuPlan $menuPlan)
     {
-        $menuPlan->load([
-            'patient',
-            'days.meals.mealType',
-            'days.meals.items.food.nutrients',
-            'days.meals.items.recipe.items.food.nutrients',
-        ]);
-
-        $daysForExport = [];
-        $planGrandTotals = $this->emptyNutrientTotals();
-
-        foreach ($menuPlan->days as $day) {
-            $dayRows = [];
-            $mealCategoryTotals = [
-                'breakfast' => $this->emptyNutrientTotals(),
-                'lunch' => $this->emptyNutrientTotals(),
-                'dinner' => $this->emptyNutrientTotals(),
-                'snacks' => $this->emptyNutrientTotals(),
-                'other' => $this->emptyNutrientTotals(),
-            ];
-
-            foreach ($day->meals as $meal) {
-                $itemRows = [];
-
-                foreach ($meal->items as $item) {
-                    $itemRows[] = [
-                        'item' => $item,
-                        'nutrients' => $item->calculateNutrients(),
-                    ];
-                }
-
-                $mealTotals = $meal->calculateNutrients();
-                $category = $this->resolveMealCategory($meal->display_name);
-                $mealCategoryTotals[$category] = $this->sumNutrients($mealCategoryTotals[$category], $mealTotals);
-
-                $dayRows[] = [
-                    'meal' => $meal,
-                    'items' => $itemRows,
-                    'totals' => $mealTotals,
-                ];
-            }
-
-            $dayGrandTotals = $day->calculateNutrients();
-            $planGrandTotals = $this->sumNutrients($planGrandTotals, $dayGrandTotals);
-
-            $daysForExport[] = [
-                'day' => $day,
-                'rows' => $dayRows,
-                'summary' => [
-                    'breakfast' => $mealCategoryTotals['breakfast'],
-                    'lunch' => $mealCategoryTotals['lunch'],
-                    'dinner' => $mealCategoryTotals['dinner'],
-                    'snacks' => $mealCategoryTotals['snacks'],
-                    'other' => $mealCategoryTotals['other'],
-                    'grand_total' => $dayGrandTotals,
-                ],
-            ];
-        }
+        [$daysForExport, $planGrandTotals] = $this->buildExportData($menuPlan);
 
         return view('menu-plans.pdf', [
             'menuPlan' => $menuPlan,
             'daysForExport' => $daysForExport,
             'planGrandTotals' => $planGrandTotals,
         ]);
+    }
+
+    public function word(MenuPlan $menuPlan)
+    {
+        [$daysForExport, $planGrandTotals] = $this->buildExportData($menuPlan);
+
+        $filename = Str::slug($menuPlan->name ?: 'plan-meniu') . '.doc';
+
+        return response()
+            ->view('menu-plans.word', [
+                'menuPlan' => $menuPlan,
+                'daysForExport' => $daysForExport,
+                'planGrandTotals' => $planGrandTotals,
+            ])
+            ->header('Content-Type', 'application/msword; charset=UTF-8')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     public function edit(MenuPlan $menuPlan)
@@ -249,5 +210,68 @@ class MenuPlanController extends Controller
         }
 
         return 'other';
+    }
+
+    private function buildExportData(MenuPlan $menuPlan): array
+    {
+        $menuPlan->load([
+            'patient',
+            'days.meals.mealType',
+            'days.meals.items.food.nutrients',
+            'days.meals.items.recipe.items.food.nutrients',
+        ]);
+
+        $daysForExport = [];
+        $planGrandTotals = $this->emptyNutrientTotals();
+
+        foreach ($menuPlan->days as $day) {
+            $dayRows = [];
+            $mealCategoryTotals = [
+                'breakfast' => $this->emptyNutrientTotals(),
+                'lunch' => $this->emptyNutrientTotals(),
+                'dinner' => $this->emptyNutrientTotals(),
+                'snacks' => $this->emptyNutrientTotals(),
+                'other' => $this->emptyNutrientTotals(),
+            ];
+
+            foreach ($day->meals as $meal) {
+                $itemRows = [];
+
+                foreach ($meal->items as $item) {
+                    $itemRows[] = [
+                        'item' => $item,
+                        'nutrients' => $item->calculateNutrients(),
+                    ];
+                }
+
+                $mealTotals = $meal->calculateNutrients();
+                $category = $this->resolveMealCategory($meal->display_name);
+                $mealCategoryTotals[$category] = $this->sumNutrients($mealCategoryTotals[$category], $mealTotals);
+
+                $dayRows[] = [
+                    'meal' => $meal,
+                    'items' => $itemRows,
+                    'totals' => $mealTotals,
+                ];
+            }
+
+            $dayGrandTotals = $day->calculateNutrients();
+            $planGrandTotals = $this->sumNutrients($planGrandTotals, $dayGrandTotals);
+
+            $daysForExport[] = [
+                'day' => $day,
+                'rows' => $dayRows,
+                'summary' => [
+                    'breakfast' => $mealCategoryTotals['breakfast'],
+                    'lunch' => $mealCategoryTotals['lunch'],
+                    'dinner' => $mealCategoryTotals['dinner'],
+                    'snacks' => $mealCategoryTotals['snacks'],
+                    'other' => $mealCategoryTotals['other'],
+                    'grand_total' => $dayGrandTotals,
+                ],
+            ];
+        }
+
+        return [$daysForExport, $planGrandTotals];
     }
 }
