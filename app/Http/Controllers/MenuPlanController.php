@@ -97,6 +97,73 @@ class MenuPlanController extends Controller
         return view('menu-plans.show', compact('menuPlan', 'daysWithNutrients', 'days', 'perPage'));
     }
 
+    public function pdf(MenuPlan $menuPlan)
+    {
+        $menuPlan->load([
+            'patient',
+            'days.meals.mealType',
+            'days.meals.items.food.nutrients',
+            'days.meals.items.recipe.items.food.nutrients',
+        ]);
+
+        $daysForExport = [];
+        $planGrandTotals = $this->emptyNutrientTotals();
+
+        foreach ($menuPlan->days as $day) {
+            $dayRows = [];
+            $mealCategoryTotals = [
+                'breakfast' => $this->emptyNutrientTotals(),
+                'lunch' => $this->emptyNutrientTotals(),
+                'dinner' => $this->emptyNutrientTotals(),
+                'snacks' => $this->emptyNutrientTotals(),
+                'other' => $this->emptyNutrientTotals(),
+            ];
+
+            foreach ($day->meals as $meal) {
+                $itemRows = [];
+
+                foreach ($meal->items as $item) {
+                    $itemRows[] = [
+                        'item' => $item,
+                        'nutrients' => $item->calculateNutrients(),
+                    ];
+                }
+
+                $mealTotals = $meal->calculateNutrients();
+                $category = $this->resolveMealCategory($meal->display_name);
+                $mealCategoryTotals[$category] = $this->sumNutrients($mealCategoryTotals[$category], $mealTotals);
+
+                $dayRows[] = [
+                    'meal' => $meal,
+                    'items' => $itemRows,
+                    'totals' => $mealTotals,
+                ];
+            }
+
+            $dayGrandTotals = $day->calculateNutrients();
+            $planGrandTotals = $this->sumNutrients($planGrandTotals, $dayGrandTotals);
+
+            $daysForExport[] = [
+                'day' => $day,
+                'rows' => $dayRows,
+                'summary' => [
+                    'breakfast' => $mealCategoryTotals['breakfast'],
+                    'lunch' => $mealCategoryTotals['lunch'],
+                    'dinner' => $mealCategoryTotals['dinner'],
+                    'snacks' => $mealCategoryTotals['snacks'],
+                    'other' => $mealCategoryTotals['other'],
+                    'grand_total' => $dayGrandTotals,
+                ],
+            ];
+        }
+
+        return view('menu-plans.pdf', [
+            'menuPlan' => $menuPlan,
+            'daysForExport' => $daysForExport,
+            'planGrandTotals' => $planGrandTotals,
+        ]);
+    }
+
     public function edit(MenuPlan $menuPlan)
     {
         $patients = Patient::query()
@@ -137,5 +204,50 @@ class MenuPlanController extends Controller
             'is_active' => ['boolean'],
             'notes' => ['nullable', 'string'],
         ]);
+    }
+
+    private function emptyNutrientTotals(): array
+    {
+        return [
+            'kcal' => 0,
+            'protein_g' => 0,
+            'fat_g' => 0,
+            'carb_g' => 0,
+            'sodium_mg' => 0,
+            'potassium_mg' => 0,
+            'phosphorus_mg' => 0,
+        ];
+    }
+
+    private function sumNutrients(array $base, array $increment): array
+    {
+        foreach ($base as $key => $value) {
+            $base[$key] += (float) ($increment[$key] ?? 0);
+        }
+
+        return $base;
+    }
+
+    private function resolveMealCategory(string $mealName): string
+    {
+        $normalized = strtolower(trim($mealName));
+
+        if (str_contains($normalized, 'gustare')) {
+            return 'snacks';
+        }
+
+        if (str_contains($normalized, 'cina')) {
+            return 'dinner';
+        }
+
+        if (str_contains($normalized, 'pranz')) {
+            return 'lunch';
+        }
+
+        if (str_contains($normalized, 'mic dejun')) {
+            return 'breakfast';
+        }
+
+        return 'other';
     }
 }

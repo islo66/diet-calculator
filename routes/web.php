@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
     // Menu Plans
     Route::resource('menu-plans', MenuPlanController::class);
+    Route::get('menu-plans/{menuPlan}/pdf', [MenuPlanController::class, 'pdf'])->name('menu-plans.pdf');
 
     // Patients
     Route::resource('patients', PatientController::class);
