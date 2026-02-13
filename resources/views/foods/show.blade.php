@@ -44,7 +44,7 @@
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900">
                             Valori Nutritionale
-                            <span class="text-sm font-normal text-gray-500">({{ $food->nutrients->count() }})</span>
+                            <span class="text-sm font-normal text-gray-500">({{ $nutrients->total() }})</span>
                         </h3>
                         <a href="{{ route('nutrients.create', ['food_id' => $food->id]) }}" class="text-emerald-600 hover:underline text-sm">
                             + Adauga
@@ -52,7 +52,7 @@
                     </div>
                 </div>
 
-                @if($food->nutrients->count() > 0)
+                @if($nutrients->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
@@ -70,7 +70,7 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                            @foreach ($food->nutrients as $nutrient)
+                            @foreach ($nutrients as $nutrient)
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4 font-medium">
                                         {{ $nutrient->basis_qty }}{{ $nutrient->basis_unit }}
@@ -96,6 +96,11 @@
                             </tbody>
                         </table>
                     </div>
+                    @if($nutrients->hasPages())
+                        <div class="mt-4">
+                            {{ $nutrients->links() }}
+                        </div>
+                    @endif
                 @else
                     <div class="p-8 text-center text-gray-500">
                         <p>{{ __('app.nutrients.empty') }}</p>

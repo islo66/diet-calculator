@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Food;
 use App\Models\FoodCategory;
+use App\Models\FoodNutrient;
 use Illuminate\Http\Request;
 
 class FoodController extends Controller
@@ -59,11 +60,24 @@ class FoodController extends Controller
             ->with('success', 'Alimentul a fost creat. Adauga valorile nutritionale.');
     }
 
-    public function show(Food $food)
+    public function show(Request $request, Food $food)
     {
-        $food->load(['category', 'nutrients']);
+        $perPage = (int) $request->query('per_page', 25);
 
-        return view('foods.show', compact('food'));
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 25;
+        }
+
+        $food->load(['category']);
+
+        $nutrients = FoodNutrient::query()
+            ->where('food_id', $food->id)
+            ->orderBy('basis_qty')
+            ->orderBy('basis_unit')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return view('foods.show', compact('food', 'nutrients', 'perPage'));
     }
 
     public function edit(Food $food)

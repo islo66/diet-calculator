@@ -210,7 +210,7 @@
                 </div>
             @endforeach
 
-            @if(count($daysWithNutrients) === 0)
+            @if($days->total() === 0)
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                     <div class="p-6 text-center text-gray-500">
                         {{ __('app.menu_days.empty') }}
@@ -218,6 +218,12 @@
                             {{ __('app.menu_days.add_first') }}
                         </a>
                     </div>
+                </div>
+            @endif
+
+            @if($days->hasPages())
+                <div class="mt-4">
+                    {{ $days->links() }}
                 </div>
             @endif
 

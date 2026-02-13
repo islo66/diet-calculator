@@ -106,7 +106,7 @@
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-medium text-gray-900">
                             {{ __('app.recipes.ingredients') }}
-                            <span class="text-sm font-normal text-gray-500">({{ $recipe->items->count() }})</span>
+                            <span class="text-sm font-normal text-gray-500">({{ $items->total() }})</span>
                         </h3>
                         <a href="{{ route('recipe-items.create', $recipe) }}" class="text-emerald-600 hover:underline text-sm">
                             + {{ __('app.recipe_items.add') }}
@@ -114,7 +114,7 @@
                     </div>
                 </div>
 
-                @if($recipe->items->count() > 0)
+                @if($items->count() > 0)
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm">
                             <thead>
@@ -130,7 +130,7 @@
                             </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200">
-                            @foreach ($recipe->items as $item)
+                            @foreach ($items as $item)
                                 @php($itemNutrients = $item->calculateNutrients())
                                 <tr class="hover:bg-gray-50">
                                     <td class="px-6 py-4">
@@ -171,6 +171,11 @@
                             </tfoot>
                         </table>
                     </div>
+                    @if($items->hasPages())
+                        <div class="p-4">
+                            {{ $items->links() }}
+                        </div>
+                    @endif
                 @else
                     <div class="p-8 text-center text-gray-500">
                         <svg class="w-12 h-12 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\MenuPlan;
+use App\Models\MenuDay;
 use App\Models\Patient;
 use App\Services\NutrientCalculatorService;
 use Illuminate\Http\Request;
@@ -68,22 +69,32 @@ class MenuPlanController extends Controller
             ->with('success', 'Planul a fost creat.');
     }
 
-    public function show(MenuPlan $menuPlan)
+    public function show(Request $request, MenuPlan $menuPlan)
     {
-        $menuPlan->load([
-            'patient',
-            'days.meals.items.food.nutrients',
-        ]);
+        $perPage = (int) $request->query('per_page', 5);
+
+        if (!in_array($perPage, [5, 10, 15, 20], true)) {
+            $perPage = 5;
+        }
+
+        $menuPlan->load(['patient']);
+
+        $days = MenuDay::query()
+            ->where('menu_plan_id', $menuPlan->id)
+            ->with(['meals.items.food.nutrients'])
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
 
         $daysWithNutrients = [];
-        foreach ($menuPlan->days as $day) {
+        foreach ($days as $day) {
             $daysWithNutrients[] = [
                 'day' => $day,
                 'nutrients' => $this->nutrientCalculator->calculateDayWithComparison($day),
             ];
         }
 
-        return view('menu-plans.show', compact('menuPlan', 'daysWithNutrients'));
+        return view('menu-plans.show', compact('menuPlan', 'daysWithNutrients', 'days', 'perPage'));
     }
 
     public function edit(MenuPlan $menuPlan)

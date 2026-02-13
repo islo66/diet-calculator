@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Patient;
 use App\Models\Recipe;
+use App\Models\RecipeItem;
 use Illuminate\Http\Request;
 
 class RecipeController extends Controller
@@ -74,14 +75,27 @@ class RecipeController extends Controller
             ->with('success', 'Reteta a fost creata. Adauga ingredientele.');
     }
 
-    public function show(Recipe $recipe)
+    public function show(Request $request, Recipe $recipe)
     {
+        $perPage = (int) $request->query('per_page', 25);
+
+        if (!in_array($perPage, [10, 25, 50, 100], true)) {
+            $perPage = 25;
+        }
+
         $recipe->load(['patient', 'items.food.nutrients']);
+
+        $items = RecipeItem::query()
+            ->where('recipe_id', $recipe->id)
+            ->with('food')
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
 
         $totalNutrients = $recipe->calculateTotalNutrients();
         $nutrientsPer100 = $recipe->nutrients_per_100;
 
-        return view('recipes.show', compact('recipe', 'totalNutrients', 'nutrientsPer100'));
+        return view('recipes.show', compact('recipe', 'items', 'totalNutrients', 'nutrientsPer100', 'perPage'));
     }
 
     public function edit(Recipe $recipe)
