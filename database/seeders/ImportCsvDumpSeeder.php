@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Schema;
 
 class ImportCsvDumpSeeder extends Seeder
 {
+    private array $idRemapByTable = [];
+    private array $foreignKeyCache = [];
+
     public function run(): void
     {
         $importPath = env('CSV_IMPORT_PATH', base_path('database/seeders/data/sqlite-export'));
@@ -193,8 +196,9 @@ class ImportCsvDumpSeeder extends Seeder
         $uniqueBy = $this->resolveUniqueColumns($table, $importColumns);
         $updateColumns = array_values(array_filter(
             $importColumns,
-            static fn (string $column) => !in_array($column, $uniqueBy, true)
+            static fn (string $column) => $column !== 'id' && !in_array($column, $uniqueBy, true)
         ));
+        $foreignKeys = $this->getForeignKeys($table);
 
         $processed = 0;
         $batch = [];
@@ -206,7 +210,17 @@ class ImportCsvDumpSeeder extends Seeder
                     continue;
                 }
                 $value = $row[$index] ?? null;
-                $record[$header] = ($value === '') ? null : $value;
+                $value = ($value === '') ? null : $value;
+
+                if ($value !== null && isset($foreignKeys[$header])) {
+                    $parentTable = $foreignKeys[$header];
+                    $mapped = $this->idRemapByTable[$parentTable][(string) $value] ?? null;
+                    if ($mapped !== null) {
+                        $value = $mapped;
+                    }
+                }
+
+                $record[$header] = $value;
             }
 
             $batch[] = $record;
@@ -234,15 +248,33 @@ class ImportCsvDumpSeeder extends Seeder
 
         if ($uniqueBy !== [] && $updateColumns !== []) {
             DB::table($table)->upsert($batch, $uniqueBy, $updateColumns);
+            $this->captureIdRemap($table, $batch, $uniqueBy);
             return count($batch);
         }
 
         DB::table($table)->insertOrIgnore($batch);
+        $this->captureIdRemap($table, $batch, $uniqueBy);
         return count($batch);
     }
 
     private function resolveUniqueColumns(string $table, array $importColumns): array
     {
+        $uniqueConstraints = $this->getUniqueConstraints($table);
+        $eligible = array_values(array_filter($uniqueConstraints, static fn (array $cols) => $cols !== []));
+
+        $subsetEligible = array_values(array_filter(
+            $eligible,
+            static fn (array $cols) => count(array_diff($cols, $importColumns)) === 0
+        ));
+
+        usort($subsetEligible, static fn (array $a, array $b) => count($a) <=> count($b));
+
+        foreach ($subsetEligible as $cols) {
+            if (!in_array('id', $cols, true)) {
+                return $cols;
+            }
+        }
+
         if (in_array('id', $importColumns, true) && Schema::hasColumn($table, 'id')) {
             return ['id'];
         }
@@ -254,6 +286,160 @@ class ImportCsvDumpSeeder extends Seeder
         ));
 
         return $primaryColumns;
+    }
+
+    private function captureIdRemap(string $table, array $batch, array $uniqueBy): void
+    {
+        if (!Schema::hasColumn($table, 'id') || !in_array('id', array_keys($batch[0] ?? []), true)) {
+            return;
+        }
+
+        if ($uniqueBy === []) {
+            return;
+        }
+
+        $idMap = $this->idRemapByTable[$table] ?? [];
+
+        foreach ($batch as $row) {
+            if (!array_key_exists('id', $row) || $row['id'] === null) {
+                continue;
+            }
+
+            $sourceId = (string) $row['id'];
+
+            if (in_array('id', $uniqueBy, true)) {
+                $idMap[$sourceId] = $row['id'];
+                continue;
+            }
+
+            $lookup = [];
+            foreach ($uniqueBy as $column) {
+                if (!array_key_exists($column, $row)) {
+                    $lookup = [];
+                    break;
+                }
+                $lookup[$column] = $row[$column];
+            }
+
+            if ($lookup === []) {
+                continue;
+            }
+
+            $actualId = DB::table($table)->where($lookup)->value('id');
+            if ($actualId !== null) {
+                $idMap[$sourceId] = $actualId;
+            }
+        }
+
+        $this->idRemapByTable[$table] = $idMap;
+    }
+
+    private function getForeignKeys(string $table): array
+    {
+        if (isset($this->foreignKeyCache[$table])) {
+            return $this->foreignKeyCache[$table];
+        }
+
+        $driver = DB::getDriverName();
+        $result = [];
+
+        if ($driver === 'pgsql') {
+            $rows = DB::select(
+                "SELECT
+                    kcu.column_name,
+                    ccu.table_name AS foreign_table_name,
+                    ccu.column_name AS foreign_column_name
+                 FROM information_schema.table_constraints tc
+                 JOIN information_schema.key_column_usage kcu
+                   ON tc.constraint_name = kcu.constraint_name
+                  AND tc.table_schema = kcu.table_schema
+                 JOIN information_schema.constraint_column_usage ccu
+                   ON ccu.constraint_name = tc.constraint_name
+                  AND ccu.table_schema = tc.table_schema
+                 WHERE tc.constraint_type = 'FOREIGN KEY'
+                   AND tc.table_schema = current_schema()
+                   AND tc.table_name = ?",
+                [$table]
+            );
+
+            foreach ($rows as $row) {
+                if ((string) $row->foreign_column_name === 'id') {
+                    $result[(string) $row->column_name] = (string) $row->foreign_table_name;
+                }
+            }
+        } elseif ($driver === 'sqlite') {
+            $rows = DB::select('PRAGMA foreign_key_list("' . str_replace('"', '""', $table) . '")');
+            foreach ($rows as $row) {
+                if ((string) $row->to === 'id') {
+                    $result[(string) $row->from] = (string) $row->table;
+                }
+            }
+        }
+
+        $this->foreignKeyCache[$table] = $result;
+
+        return $result;
+    }
+
+    private function getUniqueConstraints(string $table): array
+    {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'pgsql') {
+            $rows = DB::select(
+                "SELECT
+                    tc.constraint_name,
+                    tc.constraint_type,
+                    kcu.column_name,
+                    kcu.ordinal_position
+                 FROM information_schema.table_constraints tc
+                 JOIN information_schema.key_column_usage kcu
+                   ON tc.constraint_name = kcu.constraint_name
+                  AND tc.table_schema = kcu.table_schema
+                 WHERE tc.table_schema = current_schema()
+                   AND tc.table_name = ?
+                   AND tc.constraint_type IN ('PRIMARY KEY', 'UNIQUE')
+                 ORDER BY tc.constraint_name, kcu.ordinal_position",
+                [$table]
+            );
+
+            $grouped = [];
+            foreach ($rows as $row) {
+                $constraint = (string) $row->constraint_name;
+                $grouped[$constraint]['type'] = (string) $row->constraint_type;
+                $grouped[$constraint]['cols'][] = (string) $row->column_name;
+            }
+
+            $uniques = [];
+            foreach ($grouped as $constraintData) {
+                $uniques[] = $constraintData['cols'];
+            }
+
+            return $uniques;
+        }
+
+        if ($driver === 'sqlite') {
+            $indexRows = DB::select('PRAGMA index_list("' . str_replace('"', '""', $table) . '")');
+            $result = [];
+
+            foreach ($indexRows as $indexRow) {
+                if ((int) $indexRow->unique !== 1) {
+                    continue;
+                }
+
+                $indexName = (string) $indexRow->name;
+                $columnsRows = DB::select('PRAGMA index_info("' . str_replace('"', '""', $indexName) . '")');
+                $columns = array_map(static fn ($row) => (string) $row->name, $columnsRows);
+
+                if ($columns !== []) {
+                    $result[] = $columns;
+                }
+            }
+
+            return $result;
+        }
+
+        return [];
     }
 
     private function getPrimaryKeyColumns(string $table): array
