@@ -1,0 +1,4 @@
+id,name,email,email_verified_at,password,remember_token,created_at,updated_at,locale
+1,admin,admin@admin.com,,$2y$12$vHvgITy6hIChn3cycukiM.3gl4NcHq.zYAM4NRiFFoI575IxAP5nC,7ney5FO1Xst83KEI1u05zQUeCGRuGiPEGfR5SeJyVMjw5TbHpCChlY9DDhY2,"2026-01-10 19:41:33","2026-01-10 19:41:33",ro
+2,Cristina,busmachiu.cristina22@gmail.com,,$2y$12$FYso//hRwNH0wccqmXjkP.WfnZJV9D/yeUujTIdfufP72F0KiZJqu,,"2026-01-10 20:22:07","2026-01-10 20:22:07",ro
+3,"System User",dima.danu@gmail.com,,$2y$12$8kTpC4mA9PkgG28UVOH14eGXC6EvcgTWXHXEtQkGMcudD4S1bYjfO,,"2026-02-13 16:28:57","2026-02-13 16:28:57",ro

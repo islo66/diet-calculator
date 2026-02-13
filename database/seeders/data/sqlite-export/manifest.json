@@ -1,0 +1,263 @@
+{
+    "generated_at": "2026-02-13T18:46:27+00:00",
+    "source_connection": "sqlite",
+    "tables": [
+        {
+            "name": "cooking_profiles",
+            "columns": [
+                "id",
+                "name",
+                "description",
+                "is_active",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 0,
+            "depends_on": []
+        },
+        {
+            "name": "food_categories",
+            "columns": [
+                "id",
+                "name",
+                "is_active",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 14,
+            "depends_on": []
+        },
+        {
+            "name": "foods",
+            "columns": [
+                "id",
+                "name",
+                "default_unit",
+                "density_g_per_ml",
+                "is_active",
+                "notes",
+                "created_at",
+                "updated_at",
+                "category_id"
+            ],
+            "rows": 250,
+            "depends_on": [
+                "food_categories"
+            ]
+        },
+        {
+            "name": "meal_types",
+            "columns": [
+                "id",
+                "name",
+                "default_sort_order",
+                "is_default",
+                "is_active",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 5,
+            "depends_on": []
+        },
+        {
+            "name": "menu_plan_rules",
+            "columns": [
+                "id",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 0,
+            "depends_on": []
+        },
+        {
+            "name": "patients",
+            "columns": [
+                "id",
+                "first_name",
+                "last_name",
+                "sex",
+                "birthdate",
+                "current_height_cm",
+                "current_weight_kg",
+                "diagnosis",
+                "target_kcal_per_day",
+                "target_protein_g_per_day",
+                "target_carbs_g_per_day",
+                "target_fat_g_per_day",
+                "limit_sodium_mg_per_day",
+                "limit_potassium_mg_per_day",
+                "limit_phosphorus_mg_per_day",
+                "limit_fluids_ml_per_day",
+                "notes",
+                "is_active",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 2,
+            "depends_on": []
+        },
+        {
+            "name": "recipes",
+            "columns": [
+                "id",
+                "patient_id",
+                "name",
+                "yield_qty",
+                "yield_unit",
+                "notes",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 13,
+            "depends_on": [
+                "patients"
+            ]
+        },
+        {
+            "name": "users",
+            "columns": [
+                "id",
+                "name",
+                "email",
+                "email_verified_at",
+                "password",
+                "remember_token",
+                "created_at",
+                "updated_at",
+                "locale"
+            ],
+            "rows": 3,
+            "depends_on": []
+        },
+        {
+            "name": "cooking_profile_factors",
+            "columns": [
+                "id",
+                "cooking_profile_id",
+                "nutrient_key",
+                "factor",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 0,
+            "depends_on": [
+                "cooking_profiles"
+            ]
+        },
+        {
+            "name": "food_nutrients",
+            "columns": [
+                "id",
+                "food_id",
+                "basis_qty",
+                "basis_unit",
+                "kcal",
+                "protein_g",
+                "fat_g",
+                "carb_g",
+                "fiber_g",
+                "sodium_mg",
+                "potassium_mg",
+                "phosphorus_mg",
+                "calcium_mg",
+                "magnesium_mg",
+                "iron_mg",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 250,
+            "depends_on": [
+                "foods"
+            ]
+        },
+        {
+            "name": "menu_plans",
+            "columns": [
+                "id",
+                "patient_id",
+                "name",
+                "starts_at",
+                "ends_at",
+                "is_active",
+                "notes",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 3,
+            "depends_on": [
+                "patients"
+            ]
+        },
+        {
+            "name": "recipe_items",
+            "columns": [
+                "id",
+                "recipe_id",
+                "food_id",
+                "qty",
+                "unit",
+                "cooking_profile_id",
+                "notes",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 60,
+            "depends_on": [
+                "foods",
+                "recipes"
+            ]
+        },
+        {
+            "name": "menu_days",
+            "columns": [
+                "id",
+                "menu_plan_id",
+                "name",
+                "notes",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 4,
+            "depends_on": [
+                "menu_plans"
+            ]
+        },
+        {
+            "name": "menu_meals",
+            "columns": [
+                "id",
+                "menu_day_id",
+                "name",
+                "sort_order",
+                "created_at",
+                "updated_at",
+                "meal_type_id"
+            ],
+            "rows": 20,
+            "depends_on": [
+                "meal_types",
+                "menu_days"
+            ]
+        },
+        {
+            "name": "meal_items",
+            "columns": [
+                "id",
+                "menu_meal_id",
+                "item_type",
+                "food_id",
+                "recipe_id",
+                "portion_qty",
+                "portion_unit",
+                "notes",
+                "sort_order",
+                "created_at",
+                "updated_at"
+            ],
+            "rows": 59,
+            "depends_on": [
+                "menu_meals"
+            ]
+        }
+    ]
+}
