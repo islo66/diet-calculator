@@ -44,7 +44,7 @@
                                     - {{ $item->notes }}
                                 @endif
 
-                                @if($item->item_type === \\App\\Models\\MealItem::TYPE_RECIPE && $item->recipe)
+                                @if($item->item_type === \App\Models\MealItem::TYPE_RECIPE && $item->recipe)
                                     <div class="recipe-portion">
                                         Portia {{ number_format((float)$item->portion_qty, 1) }} {{ $item->portion_unit }}
                                     </div>

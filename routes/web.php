@@ -36,9 +36,10 @@ Route::middleware('auth')->group(function () {
     Route::resource('nutrients', FoodNutrientController::class)->except(['show']);
 
     // Menu Plans
-    Route::resource('menu-plans', MenuPlanController::class);
-    Route::get('menu-plans/{menuPlan}/pdf', [MenuPlanController::class, 'pdf'])->name('menu-plans.pdf');
-    Route::get('menu-plans/{menuPlan}/word', [MenuPlanController::class, 'word'])->name('menu-plans.word');
+Route::resource('menu-plans', MenuPlanController::class);
+Route::get('menu-plans/{menuPlan}/pdf', [MenuPlanController::class, 'pdf'])->name('menu-plans.pdf');
+Route::get('menu-plans/{menuPlan}/word', [MenuPlanController::class, 'word'])->name('menu-plans.word');
+Route::get('menu-plans/{menuPlan}/word-pdf', [MenuPlanController::class, 'wordPdf'])->name('menu-plans.word-pdf');
 
     // Patients
     Route::resource('patients', PatientController::class);

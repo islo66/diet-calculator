@@ -6,6 +6,7 @@ use App\Models\MenuPlan;
 use App\Models\MenuDay;
 use App\Models\Patient;
 use App\Services\NutrientCalculatorService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -123,6 +124,21 @@ class MenuPlanController extends Controller
             ])
             ->header('Content-Type', 'application/msword; charset=UTF-8')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function wordPdf(MenuPlan $menuPlan)
+    {
+        [$daysForExport, $planGrandTotals] = $this->buildExportData($menuPlan);
+
+        $filename = Str::slug($menuPlan->name ?: 'plan-meniu') . '-word.pdf';
+
+        return Pdf::loadView('menu-plans.word', [
+            'menuPlan' => $menuPlan,
+            'daysForExport' => $daysForExport,
+            'planGrandTotals' => $planGrandTotals,
+        ])
+            ->setPaper('a4', 'portrait')
+            ->download($filename);
     }
 
     public function edit(MenuPlan $menuPlan)
