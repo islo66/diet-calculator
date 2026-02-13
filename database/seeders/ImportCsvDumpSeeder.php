@@ -14,61 +14,61 @@ class ImportCsvDumpSeeder extends Seeder
 
     public function run(): void
     {
-        $importPath = env('CSV_IMPORT_PATH', base_path('database/seeders/data/sqlite-export'));
-
-        if (!File::isDirectory($importPath)) {
-            throw new \RuntimeException("CSV import path not found: {$importPath}");
-        }
-
-        $tableDefinitions = $this->resolveTableDefinitionsFromPath($importPath);
-        if ($tableDefinitions === []) {
-            $this->command?->warn('No CSV files found for import.');
-            return;
-        }
-
-        $filteredDefinitions = [];
-        foreach ($tableDefinitions as $tableDefinition) {
-            $table = $tableDefinition['name'];
-            if (!Schema::hasTable($table)) {
-                $this->command?->warn("Skipping missing table on target DB: {$table}");
-                continue;
-            }
-            $filteredDefinitions[] = $tableDefinition;
-        }
-
-        if ($filteredDefinitions === []) {
-            $this->command?->warn('No matching target tables found.');
-            return;
-        }
-
-        $orderedDefinitions = $this->orderTableDefinitions($filteredDefinitions);
-        $importedTables = [];
-
-        foreach ($orderedDefinitions as $definition) {
-            $table = $definition['name'];
-            $csvPath = $importPath . DIRECTORY_SEPARATOR . $table . '.csv';
-
-            if (!File::exists($csvPath)) {
-                $this->command?->warn("Skipping table without CSV file: {$table}");
-                continue;
-            }
-
-            $missingDeps = array_values(array_filter(
-                $definition['depends_on'],
-                static fn (string $dependency) => !in_array($dependency, $importedTables, true)
-            ));
-
-            if ($missingDeps !== []) {
-                $this->command?->warn("Skipping {$table}: unresolved dependencies (" . implode(', ', $missingDeps) . ')');
-                continue;
-            }
-
-            $processedRows = $this->importTableFromCsv($table, $csvPath);
-            $this->command?->line("Processed {$processedRows} rows for {$table}");
-            $importedTables[] = $table;
-        }
-
-        $this->resetSequencesIfPostgres($importedTables);
+//        $importPath = env('CSV_IMPORT_PATH', base_path('database/seeders/data/sqlite-export'));
+//
+//        if (!File::isDirectory($importPath)) {
+//            throw new \RuntimeException("CSV import path not found: {$importPath}");
+//        }
+//
+//        $tableDefinitions = $this->resolveTableDefinitionsFromPath($importPath);
+//        if ($tableDefinitions === []) {
+//            $this->command?->warn('No CSV files found for import.');
+//            return;
+//        }
+//
+//        $filteredDefinitions = [];
+//        foreach ($tableDefinitions as $tableDefinition) {
+//            $table = $tableDefinition['name'];
+//            if (!Schema::hasTable($table)) {
+//                $this->command?->warn("Skipping missing table on target DB: {$table}");
+//                continue;
+//            }
+//            $filteredDefinitions[] = $tableDefinition;
+//        }
+//
+//        if ($filteredDefinitions === []) {
+//            $this->command?->warn('No matching target tables found.');
+//            return;
+//        }
+//
+//        $orderedDefinitions = $this->orderTableDefinitions($filteredDefinitions);
+//        $importedTables = [];
+//
+//        foreach ($orderedDefinitions as $definition) {
+//            $table = $definition['name'];
+//            $csvPath = $importPath . DIRECTORY_SEPARATOR . $table . '.csv';
+//
+//            if (!File::exists($csvPath)) {
+//                $this->command?->warn("Skipping table without CSV file: {$table}");
+//                continue;
+//            }
+//
+//            $missingDeps = array_values(array_filter(
+//                $definition['depends_on'],
+//                static fn (string $dependency) => !in_array($dependency, $importedTables, true)
+//            ));
+//
+//            if ($missingDeps !== []) {
+//                $this->command?->warn("Skipping {$table}: unresolved dependencies (" . implode(', ', $missingDeps) . ')');
+//                continue;
+//            }
+//
+//            $processedRows = $this->importTableFromCsv($table, $csvPath);
+//            $this->command?->line("Processed {$processedRows} rows for {$table}");
+//            $importedTables[] = $table;
+//        }
+//
+//        $this->resetSequencesIfPostgres($importedTables);
     }
 
     private function resolveTableDefinitionsFromPath(string $importPath): array

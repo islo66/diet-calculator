@@ -8,4 +8,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 //Need only for local use
-require __DIR__ . '/console/sqlite-export-csv.php';
+//require __DIR__ . '/console/sqlite-export-csv.php';
