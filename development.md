@@ -9,7 +9,7 @@ This app is a diet/menu planner that manages foods, nutrients, recipes, and menu
 - Frontend: Vite + Tailwind CSS + Alpine.js.
 - Web server: Nginx.
 - Containerization: Docker + Docker Compose.
-- Production: Nginx + Certbot for SSL.
+- Production: HTTP only; SSL is terminated by the central infra proxy.
 
 Services (local):
 - `app` - PHP/Laravel
@@ -20,8 +20,7 @@ Services (local):
 Services (prod):
 - `app` - PHP/Laravel (php-fpm)
 - `pgsql` - PostgreSQL
-- `nginx` - reverse proxy (80/443)
-- `certbot` - SSL renew
+- `nginx` - reverse proxy (HTTP only)
 
 ## Project Structure (Key Paths)
 - `app/` - business logic, controllers, models
@@ -32,7 +31,7 @@ Services (prod):
 - `docker/` - Nginx configs
 - `docker-compose.yml` - local
 - `docker-compose.prod.yml` - production
-- `deploy.sh` - production deploy with SSL
+- `deploy.sh` - production deploy (SSL handled by infra)
 
 ## Environment Configuration
 Local:
@@ -78,7 +77,7 @@ Notes:
 ## Production Deployment
 Server prerequisites:
 - Docker + Docker Compose installed
-- Ports 80/443 open
+- Port 8012 open (HTTP only)
 
 Production volume strategy (important):
 - Use a single shared volume `app_code` mounted to `/var/www` for BOTH `app` and `nginx`.
@@ -96,8 +95,6 @@ Steps:
    - `make deploy` or `bash deploy.sh`
 3. The script will:
    - build images
-   - start Nginx + DB
-   - obtain SSL certificate (if missing)
    - start all containers
 
 Useful production commands:
@@ -105,7 +102,6 @@ Useful production commands:
 - `make prod-logs`
 - `make prod-restart`
 - `make prod-down`
-- `make ssl-renew`
 
 ## Server Access
 1. SSH into the server:

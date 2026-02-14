@@ -129,8 +129,6 @@ prod-sh: ## Open shell in production app container
 deploy: ## Full production deployment with SSL
 	bash deploy.sh
 
-ssl-renew: ## Renew SSL certificate
-	docker compose $(PROD) run --rm certbot renew
 	docker compose $(PROD) exec nginx nginx -s reload
 
 prod-restart:
@@ -143,4 +141,4 @@ prod-restart:
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: install up down restart logs ps artisan migrate migrate-fresh migrate-status seed seed-foods seed-meals tinker cache cache-clear composer npm test sh sh-db prod-up prod-down prod-restart prod-logs prod-ps prod-sh deploy ssl-renew help
+.PHONY: install up down restart logs ps artisan migrate migrate-fresh migrate-status seed seed-foods seed-meals tinker cache cache-clear composer npm test sh sh-db prod-up prod-down prod-restart prod-logs prod-ps prod-sh deploy help
