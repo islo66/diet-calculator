@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\RecipeItem;
 use App\Models\User;
 use App\Observers\RecipeItemObserver;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Log;
 
@@ -25,8 +26,12 @@ class AppServiceProvider extends ServiceProvider
     {
         RecipeItem::observe(RecipeItemObserver::class);
 
-        if (! app()->runningUnitTests()) {
+        if (!app()->runningUnitTests()) {
             $this->ensureSystemUser();
+        }
+
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
         }
     }
 
