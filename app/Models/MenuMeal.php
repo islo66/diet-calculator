@@ -26,6 +26,7 @@ class MenuMeal extends Model
     public const MEAL_LUNCH = 'Pranz';
     public const MEAL_SNACK_PM = 'Gustare PM';
     public const MEAL_DINNER = 'Cina';
+    public const MEAL_SNACK_LATE = 'Gustare seara';
 
     /**
      * @deprecated Utilizează MealType::active()->ordered()->get() în loc
@@ -38,6 +39,7 @@ class MenuMeal extends Model
             self::MEAL_LUNCH,
             self::MEAL_SNACK_PM,
             self::MEAL_DINNER,
+            self::MEAL_SNACK_LATE,
         ];
     }
 

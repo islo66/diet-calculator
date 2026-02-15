@@ -31,6 +31,7 @@ class MealType extends Model
         ['name' => 'Pranz', 'default_sort_order' => 3],
         ['name' => 'Gustare PM', 'default_sort_order' => 4],
         ['name' => 'Cina', 'default_sort_order' => 5],
+        ['name' => 'Gustare seara', 'default_sort_order' => 6],
     ];
 
     public function menuMeals(): HasMany
